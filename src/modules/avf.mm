@@ -192,6 +192,14 @@ void CppAVFCam::swap(CppAVFCam& first, CppAVFCam& second)
     swap(first.m_pVideoFileOutput, second.m_pVideoFileOutput);
 }
 
+void CppAVFCam::file_output_done(bool error)
+{
+    if (error)
+        std::cout << "   error recording " << this << std::endl;
+    else
+        std::cout << "   done recording " << this << std::endl;
+}
+
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
 {
     if (!m_pDevice)
