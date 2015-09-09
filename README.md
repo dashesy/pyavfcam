@@ -1,5 +1,5 @@
 pyavfcam 0.0.1
-Python extension to yse OSX AVFoundation to access camera
+Python extension to use OSX AVFoundation to access camera
 
 
 Introduction

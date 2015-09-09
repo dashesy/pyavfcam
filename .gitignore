@@ -1,2 +1,8 @@
-build
-dist
+build/
+dist/
+
+.settings/
+.metadata/
+.idea/
+*.egg-info/
+
