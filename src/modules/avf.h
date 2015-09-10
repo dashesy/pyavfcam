@@ -3,17 +3,15 @@
 //
 // 2015 dashesy
 //--------------------------------------
-//
-// Keep the resemblance of a proper C++
-//
+
 
 #include <vector>
 
-class AVCaptureSession;
-class AVCaptureDevice;
-class AVCaptureDelegate;
-class AVCaptureDeviceInput;
-class AVCaptureFileOutput;
+@class AVCaptureDevice;
+@protocol AVCaptureSession;
+@protocol AVCaptureDelegate;
+@protocol AVCaptureDeviceInput;
+@protocol AVCaptureFileOutput;
 
 struct _object;
 typedef _object PyObject;;
