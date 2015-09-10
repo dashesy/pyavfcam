@@ -45,7 +45,7 @@ cdef class AVFCam(object):
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     # see if it is derived
-    if getattr(self.__class__, method, '') == getattr(CppAVFCam, method, ''):
+    if not callable(getattr(self.__class__, method, None)):
         overridden[0] = 0
     else:
         overridden[0] = 1

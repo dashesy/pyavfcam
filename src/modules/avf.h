@@ -40,7 +40,7 @@ public:
     friend void swap(CppAVFCam& first, CppAVFCam& second); // nothrow
 
     void set_settings(unsigned int width, unsigned int height, float fps);
-    void record(std::string path);
+    void record(std::string path, unsigned int duration);
     void get_device_formats();
     std::vector<unsigned int> get_dimension();
 };

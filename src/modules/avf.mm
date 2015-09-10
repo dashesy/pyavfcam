@@ -244,7 +244,7 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
     }
 }
 
-void CppAVFCam::record(std::string path)
+void CppAVFCam::record(std::string path, unsigned int duration)
 {
     if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
         // TODO: raise error

@@ -5,11 +5,11 @@ Purpose: CPP wrapper
 """
 
 from libcpp.string cimport string
-from cpython.ref cimport cpy_ref
+cimport cpython.ref as cpy_ref
 
 cdef extern from "modules/avf.h":
     
     cdef cppclass CppAVFCam:
         CppAVFCam()
-        CppAVFCam(bool sink_file, bool sink_callback, cpy_ref.PyObject *obj) except +
-        void record(string path)
+        CppAVFCam(bint sink_file, bint sink_callback, cpy_ref.PyObject *obj) except +
+        void record(string path, int duration)
