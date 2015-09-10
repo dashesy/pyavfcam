@@ -62,7 +62,7 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    m_pInstance->file_output_done(error != NULL)
+    m_pInstance->file_output_done(error != NULL);
 }
 
 @end
@@ -78,16 +78,16 @@ CppAVFCam::CppAVFCam()
 
 // copy-constructor
 CppAVFCam::CppAVFCam(const CppAVFCam& other)
-    : CppAVFCam(),
+    : CppAVFCam()
 {
     std::cout << "   C++: copy constructing CppAVFCam at " << this << std::endl;
     // Shallow copy the member pointers
-    m_pObj = other.m_pObj
-    m_pSession = other.m_pSession
-    m_pDevice = other.m_pDevice
-    m_pCapture = other.m_pCapture
-    m_pVideoInput = other.m_pVideoInput
-    m_pVideoFileOutput = other.m_pVideoFileOutput
+    m_pObj = other.m_pObj;
+    m_pSession = other.m_pSession;
+    m_pDevice = other.m_pDevice;
+    m_pCapture = other.m_pCapture;
+    m_pVideoInput = other.m_pVideoInput;
+    m_pVideoFileOutput = other.m_pVideoFileOutput;
 
     // TODO: now deallocate other gracefully
 }
@@ -103,7 +103,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         if (import_pyavfcam()) {
             std::cerr << "[c+]  error in import_avf!\n";
         } else {
-            Py_XINCREF(m_obj);
+            Py_XINCREF(m_pObj);
         }
     }
 
