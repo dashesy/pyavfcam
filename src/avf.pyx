@@ -10,6 +10,8 @@ cimport cpython.ref as cpy_ref
 cdef class AVFCam(object):
     """
     AVFoundation simple camera interface
+
+    User should derive this class to get the callbacks
     """
 
     # reference to the actual object
@@ -45,8 +47,9 @@ cdef class AVFCam(object):
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     # see if it is derived
-    if not callable(getattr(self.__class__, method, None)):
+    func = getattr(self, method, None)
+    if not callable(func):
         overridden[0] = 0
     else:
         overridden[0] = 1
-        getattr(self, method)(*args, **kwargs)
+        func(*args, **kwargs)
