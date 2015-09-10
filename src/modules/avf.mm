@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include "avf.h"
+#include "../avf_api.h"
 
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate,
@@ -209,23 +210,25 @@ void CppAVFCam::swap(CppAVFCam& first, CppAVFCam& second)
     swap(first.m_pVideoFileOutput, second.m_pVideoFileOutput);
 }
 
+// Callback to Python
 void CppAVFCam::file_output_done(bool error)
 {
-    if (this->m_obj) {
+    if (m_pObj) {
         int overridden;
+        PyObject * kwargs = Py_BuildValue("{}");
+        PyObject * args = Py_BuildValue("(i)", error);
+
         // Call a virtual overload, if it exists
-        int result = cy_call_func(m_obj, &overridden, (char*)"file_output_done");
-        if (error)
-            // Call parent method
-            result = TestClass::override_me();
+        cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+        if (!overridden) {
+            if (error)
+                std::cout << "   error recording " << this << std::endl;
+            else
+                std::cout << "   done recording " << this << std::endl;
+
+        }
         return;
     }
-
-    if (error)
-        std::cout << "   error recording " << this << std::endl;
-    else
-        std::cout << "   done recording " << this << std::endl;
-
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)

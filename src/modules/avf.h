@@ -11,7 +11,9 @@ class AVCaptureDevice;
 class AVCaptureDelegate;
 class AVCaptureDeviceInput;
 class AVCaptureFileOutput;
-class PyObject;
+
+struct _object;
+typedef _object PyObject;;
 
 class CppAVFCam
 {
@@ -23,7 +25,7 @@ private:
     AVCaptureDeviceInput * m_pVideoInput;
     AVCaptureFileOutput * m_pVideoFileOutput;
 
-private:
+public:
     virtual void file_output_done(bool error);
     virtual void sample_buffer();
 

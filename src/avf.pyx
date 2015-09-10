@@ -43,10 +43,10 @@ cdef class AVFCam(object):
         cdef string video_name_str = video_name.encode('UTF-8')
         self._ref.record(video_name_str, duration)
 
-cdef public api int cy_call_func_int_fast(object self, bint *overridden, char* method):
-    # see if it is not overridden
-    if getattr(self.__class__, method) == getattr(CppAVFCam, method):
-        overridden[0] = 1
-    else:
+cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
+    # see if it is derived
+    if getattr(self.__class__, method, '') == getattr(CppAVFCam, method, ''):
         overridden[0] = 0
-        return getattr(self, method)()
+    else:
+        overridden[0] = 1
+        getattr(self, method)(*args, **kwargs)
