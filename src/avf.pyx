@@ -21,8 +21,8 @@ cdef class AVFCam(object):
             'file': File output (default)
             'callback': Decompressed video frame callback
         """
-        cdef bool sink_file = False
-        cdef bool sink_callback = False
+        cdef bint sink_file = False
+        cdef bint sink_callback = False
         if sinks is None:
             sink_file = True
         else:
