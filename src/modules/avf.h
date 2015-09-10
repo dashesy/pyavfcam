@@ -8,10 +8,10 @@
 #include <vector>
 
 @class AVCaptureDevice;
-@protocol AVCaptureSession;
-@protocol AVCaptureDelegate;
-@protocol AVCaptureDeviceInput;
-@protocol AVCaptureFileOutput;
+@class AVCaptureSession;
+@class AVCaptureDelegate;
+@class AVCaptureDeviceInput;
+@class AVCaptureFileOutput;
 
 struct _object;
 typedef _object PyObject;;
