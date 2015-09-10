@@ -33,7 +33,7 @@ if build_ext:
     avf_module = Extension(
         'pyavfcam',
         ['src/avf.pyx',
-         'src/modules/avf.mm',
+         'src/modules/avf.m',
          ],
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
@@ -44,7 +44,7 @@ else:
     avf_module = Extension(
         'pyavfcam',
         ['src/avf.cpp',
-         'src/modules/avf.mm',
+         'src/modules/avf.m',
          ],
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
@@ -81,7 +81,6 @@ setup(
     long_description=readme('README.md'),
     packages=find_packages(),
     license="BSD",
-    language="c++",
     cmdclass={
         'build_ext': build_ext,
     },
