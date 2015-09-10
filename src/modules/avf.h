@@ -2,9 +2,12 @@
 // Simple video capture in OSX using AVFoundation
 //
 // 2015 dashesy
-
 //--------------------------------------
+//
 // Keep the resemblance of a proper C++
+//
+
+#include <vector>
 
 class AVCaptureSession;
 class AVCaptureDevice;
