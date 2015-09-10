@@ -24,7 +24,7 @@
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput
   didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
   fromConnections:(NSArray *)connections
-  error:(NSError *)error
+  error:(NSError *)error;
 
 @end
 
@@ -78,7 +78,9 @@ CppAVFCam::CppAVFCam()
 
 // copy-constructor
 CppAVFCam::CppAVFCam(const CppAVFCam& other)
-    : CppAVFCam()
+    : m_pObj(NULL),
+      m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
+      m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
     std::cout << "   C++: copy constructing CppAVFCam at " << this << std::endl;
     // Shallow copy the member pointers
@@ -94,7 +96,9 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
 
 // main constructor
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
-    : CppAVFCam()
+    : m_pObj(NULL),
+      m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
+      m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
     std::cout << "   C++: creating CppAVFCam at " << this << std::endl;
 
@@ -192,10 +196,10 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 {
     swap(*this, other);
 
-    return *this
+    return *this;
 }
 
-void CppAVFCam::swap(CppAVFCam& first, CppAVFCam& second)
+void swap(CppAVFCam& first, CppAVFCam& second)
 {
     // enable ADL (not necessary in our case, but good practice)
     using std::swap;
