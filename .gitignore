@@ -1,6 +1,8 @@
 build/
 dist/
 
+.DS_Store
+
 .settings/
 .metadata/
 .idea/
