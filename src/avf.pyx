@@ -5,8 +5,9 @@ Purpose: Access AVFoundation as a Cython class
 """
 
 from avf cimport CppAVFCam, string
+cimport cpython.ref as cpy_ref
 
-cdef class AVFCam:
+cdef class AVFCam(object):
     """
     AVFoundation simple camera interface
     """
@@ -32,7 +33,7 @@ cdef class AVFCam:
                 sink_callback = True
 
         # the one and only reference
-        self._ref = CppAVFCam(sink_file, sink_callback)
+        self._ref = CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)
 
     def record(self, video_name, duration=20):
         """record a video
@@ -41,3 +42,11 @@ cdef class AVFCam:
         """
         cdef string video_name_str = video_name.encode('UTF-8')
         self._ref.record(video_name_str, duration)
+
+cdef public api int cy_call_func_int_fast(object self, bint *overridden, char* method):
+    # see if it is not overridden
+    if getattr(self.__class__, method) == getattr(CppAVFCam, method):
+        overridden[0] = 1
+    else:
+        overridden[0] = 0
+        return getattr(self, method)()

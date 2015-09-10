@@ -11,10 +11,12 @@ class AVCaptureDevice;
 class AVCaptureDelegate;
 class AVCaptureDeviceInput;
 class AVCaptureFileOutput;
+class PyObject;
 
 class CppAVFCam
 {
 private:
+    PyObject * m_pObj;  // Python binding
     AVCaptureSession * m_pSession;
     AVCaptureDevice * m_pDevice;              // Camera device
     AVCaptureDelegate * m_pCapture;           // Capture delegate
@@ -22,15 +24,15 @@ private:
     AVCaptureFileOutput * m_pVideoFileOutput;
 
 private:
-    void file_output_done(bool error);
-    void sample_buffer();
+    virtual void file_output_done(bool error);
+    virtual void sample_buffer();
 
 public:
 
     CppAVFCam();
-    CppAVFCam(bool sink_file, bool sink_callback);
+    CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj=NULL);
     CppAVFCam(const CppAVFCam& other);
-    ~CppAVFCam();
+    virtual ~CppAVFCam();
 
     CppAVFCam & operator= (CppAVFCam other);
     friend void swap(CppAVFCam& first, CppAVFCam& second); // nothrow

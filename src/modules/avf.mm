@@ -68,7 +68,8 @@
 
 // Default constructor
 CppAVFCam::CppAVFCam()
-    : m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
+    : m_pObj(NULL),
+      m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
     std::cout << "   C++: creating default CppAVFCam at " << this << std::endl;
@@ -79,7 +80,8 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     : CppAVFCam(),
 {
     std::cout << "   C++: copy constructing CppAVFCam at " << this << std::endl;
-    // Shallow copy
+    // Shallow copy the member pointers
+    m_pObj = other.m_pObj
     m_pSession = other.m_pSession
     m_pDevice = other.m_pDevice
     m_pCapture = other.m_pCapture
@@ -90,9 +92,19 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
 }
 
 // main constructor
-CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback)
+CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
+    : CppAVFCam()
 {
     std::cout << "   C++: creating CppAVFCam at " << this << std::endl;
+
+    m_pObj = pObj;
+    if (m_pObj) {
+        if (import_avf()) {
+            std::cerr << "[c+]  error in import_avf!\n";
+        } else {
+            Py_XINCREF(m_obj);
+        }
+    }
 
     m_pCapture = [[AVCaptureDelegate alloc] init];
     m_pCapture->m_pInstance = this;
@@ -168,6 +180,10 @@ CppAVFCam::~CppAVFCam()
     }
 
     [pool drain];
+
+    // decrease refcount to Python binding
+    Py_XDECREF(m_pObj);
+    m_pObj = NULL;
 }
 
 // Assignment operator
@@ -185,6 +201,7 @@ void CppAVFCam::swap(CppAVFCam& first, CppAVFCam& second)
 
     // by swapping the members of two classes,
     // the two classes are effectively swapped
+    swap(first.m_pObj, second.m_pObj);
     swap(first.m_pSession, second.m_pSession);
     swap(first.m_pDevice, second.m_pDevice);
     swap(first.m_pCapture, second.m_pCapture);
@@ -194,10 +211,21 @@ void CppAVFCam::swap(CppAVFCam& first, CppAVFCam& second)
 
 void CppAVFCam::file_output_done(bool error)
 {
+    if (this->m_obj) {
+        int overridden;
+        // Call a virtual overload, if it exists
+        int result = cy_call_func(m_obj, &overridden, (char*)"file_output_done");
+        if (error)
+            // Call parent method
+            result = TestClass::override_me();
+        return;
+    }
+
     if (error)
         std::cout << "   error recording " << this << std::endl;
     else
         std::cout << "   done recording " << this << std::endl;
+
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
