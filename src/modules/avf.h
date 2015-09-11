@@ -15,8 +15,7 @@
 @class AVCaptureDeviceInput;
 @class AVCaptureFileOutput;
 
-@class CMSampleBufferRef;
-
+class VideoFrame;
 struct _object;
 typedef _object PyObject;;
 
@@ -32,7 +31,7 @@ private:
 
 public:
     virtual void file_output_done(bool error);
-    virtual void video_output(CMSampleBufferRef sampleBuffer);
+    virtual void video_output(VideoFrame &frame);
 
 public:
 

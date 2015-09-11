@@ -11,6 +11,30 @@
 #include "avf.h"
 #include "../avf_api.h"
 
+
+// Wrap the image into something we can send easily and efficiently to Python
+class VideoFrame
+{
+public:
+    VideoFrame(CMSampleBufferRef sampleBuffer) {
+    // Get a bitmap representation of the frame using CoreImage and Cocoa calls
+
+    // Pass an actual reference to a custom Frame class up
+
+//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(source);
+//    CVPixelBufferLockBaseAddress(imageBuffer,0);
+//
+//    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+//    size_t width = CVPixelBufferGetWidth(imageBuffer);
+//    size_t height = CVPixelBufferGetHeight(imageBuffer);
+//    void *src_buff = CVPixelBufferGetBaseAddress(imageBuffer);
+//
+//    NSData *data = [NSData dataWithBytes:src_buff length:bytesPerRow * height];
+//
+//    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+    }
+};
+
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate,
                                          AVCaptureFileOutputRecordingDelegate>
@@ -81,7 +105,7 @@
     if (!m_pInstance)
         return;
 
-    m_pInstance->video_output(sampleBuffer);
+    m_pInstance->video_output(VideoFrame(sampleBuffer));
 
 }
 
@@ -278,28 +302,12 @@ void CppAVFCam::file_output_done(bool error)
 }
 
 // Video frame callback to Python
-void CppAVFCam::video_output(CMSampleBufferRef sampleBuffer)
+void CppAVFCam::video_output(VideoFrame &frame)
 {
     if (!m_pObj)
         return;
 
-    // Get a bitmap representation of the frame using CoreImage and Cocoa calls
-
-    // Pass an actual reference to a custom Frame class up
-
-//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(source);
-//    CVPixelBufferLockBaseAddress(imageBuffer,0);
-//
-//    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
-//    size_t width = CVPixelBufferGetWidth(imageBuffer);
-//    size_t height = CVPixelBufferGetHeight(imageBuffer);
-//    void *src_buff = CVPixelBufferGetBaseAddress(imageBuffer);
-//
-//    NSData *data = [NSData dataWithBytes:src_buff length:bytesPerRow * height];
-//
-//    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-
-    // TODO: implement for callback
+    // TODO: implement callback using numpy array
 
 }
 
