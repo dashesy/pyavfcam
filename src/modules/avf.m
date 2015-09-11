@@ -234,15 +234,17 @@ CppAVFCam::~CppAVFCam()
         [m_pSession release];
         m_pSession = NULL;
     }
+
     NSLog(@"stop      1");
-    if (m_pCapture) {
-        [m_pCapture release];
-        m_pCapture = NULL;
-    }
-    NSLog(@"stop      2");
     if (m_pVideoInput) {
         [m_pVideoInput release];
         m_pVideoInput = NULL;
+    }
+
+    NSLog(@"stop      2");
+    if (m_pCapture) {
+        [m_pCapture release];
+        m_pCapture = NULL;
     }
     NSLog(@"stop      3");
 
