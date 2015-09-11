@@ -100,7 +100,7 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     // TODO: now deallocate other gracefully
 }
 
-// main constructor
+// designated constructor
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),

@@ -11,7 +11,7 @@ cdef class AVFCam(object):
     """
     AVFoundation simple camera interface
 
-    User should derive this class to get the callbacks
+    User should derive this class to get the callbacks, we do not provide any default implementations
     """
 
     # reference to the actual object
@@ -46,7 +46,11 @@ cdef class AVFCam(object):
         self._ref.record(video_name_str, duration)
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
-    # see if it is derived
+    """single point of entry from C++ land
+    :param overridden: if the method is implemented
+    :param method: bound method name to run
+    """
+    # see if it is implemented in a derived class
     func = getattr(self, method, None)
     if not callable(func):
         overridden[0] = 0
