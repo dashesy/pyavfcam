@@ -4,7 +4,7 @@ Created on Sept 7, 2015
 Purpose: Access AVFoundation as a Cython extension class
 """
 
-from avf cimport CppAVFCam, string
+from avf cimport CppAVFCam, string, PyEval_InitThreads
 cimport cpython.ref as cpy_ref
 
 # the callback may come from a non-python thread
