@@ -105,7 +105,7 @@ public:
     if (!m_pInstance)
         return;
 
-    VideoFrame frame = VideoFrame(sampleBuffer)
+    VideoFrame frame = VideoFrame(sampleBuffer);
     m_pInstance->video_output(frame);
 
 }
