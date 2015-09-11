@@ -64,8 +64,10 @@ public:
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
 {
+    std::cout << "   initWithInstance CppAVFCam at " << pInstance << std::endl;
     self = [super init];
     if(self) {
+        NSLog(@"done");
         m_pInstance = pInstance;
         m_semFile = NULL;
     }
@@ -246,6 +248,7 @@ CppAVFCam::~CppAVFCam()
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
+        [m_pSession beginConfiguration];
         for(AVCaptureInput *input1 in m_pSession.inputs) {
             [m_pSession removeInput:input1];
         }
@@ -253,6 +256,8 @@ CppAVFCam::~CppAVFCam()
         for(AVCaptureOutput *output1 in m_pSession.outputs) {
             [m_pSession removeOutput:output1];
         }
+        [m_pSession commitConfiguration];
+
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
@@ -305,7 +310,8 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 
 void swap(CppAVFCam& first, CppAVFCam& second)
 {
-    NSLog(@"swap call");
+    std::cout << "   swap first " << first << std::endl;
+    std::cout << "   swap decond " << second << std::endl;
     // enable ADL (not necessary in our case, but good practice)
     using std::swap;
 
