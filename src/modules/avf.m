@@ -16,6 +16,7 @@
                                          AVCaptureFileOutputRecordingDelegate>
 {
     CppAVFCam * m_pInstance; // What I am delegated for
+    dispatch_semaphore_t m_semFile;  // Semaphore for blocking file video sink
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
@@ -42,13 +43,34 @@
     self = [super init];
     if(self) {
         m_pInstance = pInstance;
+        m_semFile = NULL;
     }
     return self;
 }
 
+- (void)signalFileOutput
+{
+    // Remove any possible leftovers
+    if (m_semFile)
+        dispatch_release(m_semFile);
+
+    m_semFile = dispatch_semaphore_create(0);
+}
+
+- (void)blockFileOutput:(uint64_t)seconds
+{
+    if (!m_semFile)
+        return
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, seconds);
+    dispatch_semaphore_wait(m_semFile, timeout);
+}
+
 -(void)dealloc
 {
-    // TODO: see what needs to be de-allocated
+    if (m_semFile) {
+        dispatch_release(m_semFile);
+        m_semFile = NULL;
+    }
     [super dealloc];
 }
 
@@ -70,6 +92,9 @@
   error:(NSError *)error
 {
     m_pInstance->file_output_done(error != NULL);
+    if (m_semFile) {
+        dispatch_semaphore_signal(m_semFile);
+    }
 }
 
 @end
@@ -285,25 +310,32 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
     NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path_str];
 
-    NSError *error = nil;
+    NSError *file_error = nil;
     // AVFoundation will not overwrite but we do, remove the file if it exists
-    [[NSFileManager defaultManager] removeItemAtURL:url error:&error];
-    if (error && error.code != NSFileNoSuchFileError) {
-        // The only accepted error is if files does not exist yet
+    [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
 
-    } else {
-        error = nil;
+    // The only accepted file error is if file does not exist yet
+    if (!file_error || file_error.code == NSFileNoSuchFileError) {
+        file_error = nil;
 
         // Set the duration of the video, pretend fps is 600, be a nice sheep
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
 
+        // Request for signaling when output done
+        if (blocking)
+            [m_pVideoFileOutput signalFileOutput];
+
         // Start recordign the video and let me know when it is done
         [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+
+        // Block on file output, time out in twice the expected time!
+        if (blocking)
+            [m_pVideoFileOutput blockFileOutput:(uint64_t)(2 * duration * NSEC_PER_SEC)];
     }
 
     [pool drain];
 
-    if (error)
+    if (file_error)
         throw std::invalid_argument( "invalid or inaccessable path (error)" );
 }
 
