@@ -11,4 +11,4 @@ import pyavfcam
 video = pyavfcam.AVFCam()
 video.record('test.avi', duration=10)
 
-print "Saved test.avi (Size: " + str(video.width) + " x " + str(video.height) + ")"
+print "Saved test.avi (Size: " + str(video.shape[0]) + " x " + str(video.shape[1]) + ")"

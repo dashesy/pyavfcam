@@ -331,8 +331,8 @@ std::vector<unsigned int> CppAVFCam::get_dimension()
     CMFormatDescriptionRef format = [[ports objectAtIndex:0] formatDescription];
     CGSize s1 = CMVideoFormatDescriptionGetPresentationDimensions(format, YES, YES);
 
-    dim.push_back((unsigned int)s1.width);
     dim.push_back((unsigned int)s1.height);
+    dim.push_back((unsigned int)s1.width);
 
     [pool drain];
 

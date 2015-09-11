@@ -69,3 +69,10 @@ cdef class AVFCam(object):
         """stop current recording
         """
         self._ref.stop_recording()
+
+    @property
+    def shape(self):
+        """video shape
+        """
+        dim = self._ref.get_dimension()
+        return tuple(dim)

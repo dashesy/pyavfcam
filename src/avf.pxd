@@ -5,6 +5,7 @@ Purpose: CPP wrapper
 """
 
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 cimport cpython.ref as cpy_ref
 
 cdef extern from "Python.h":
@@ -19,3 +20,4 @@ cdef extern from "modules/avf.h":
         CppAVFCam(bint sink_file, bint sink_callback, cpy_ref.PyObject *obj) except +
         void record(string path, unsigned int duration)
         void stop_recording()
+        vector[unsigned int] get_dimension()
