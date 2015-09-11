@@ -327,7 +327,7 @@ void CppAVFCam::stop_recording()
 void CppAVFCam::get_device_formats()
 {
     if (!m_pDevice)
-        return;
+        throw std::invalid_argument( "webcam video source not initialized" );
 
     for(AVCaptureDeviceFormat *vFormat in [m_pDevice formats] )
     {
@@ -343,7 +343,6 @@ std::vector<unsigned int> CppAVFCam::get_dimension()
 {
     std::vector<unsigned int> dim;
     if (!m_pVideoInput)
-        // TODO: raise error
         return dim;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
