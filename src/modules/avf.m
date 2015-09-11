@@ -234,10 +234,6 @@ CppAVFCam::~CppAVFCam()
         [m_pSession release];
         m_pSession = NULL;
     }
-    if (m_pDevice) {
-        [m_pDevice release];
-        m_pDevice = NULL;
-    }
 
     if (m_pCapture) {
         [m_pCapture release];
@@ -252,6 +248,12 @@ CppAVFCam::~CppAVFCam()
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
+    }
+
+    // Deallocate device at the end
+    if (m_pDevice) {
+        [m_pDevice release];
+        m_pDevice = NULL;
     }
 
     [pool drain];
