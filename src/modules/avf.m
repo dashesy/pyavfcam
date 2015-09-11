@@ -247,8 +247,8 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
 
     if ( [m_pDevice lockForConfiguration:NULL] == YES ) {
         // should set these properties after output is added to session or it may be lost
-        [m_pDevice setActiveVideoMinFrameDuration:CMTimeMake(1, self.fps)];
-        [m_pDevice setActiveVideoMaxFrameDuration:CMTimeMake(1, self.fps)];
+        [m_pDevice setActiveVideoMinFrameDuration:CMTimeMake(1, fps)];
+        [m_pDevice setActiveVideoMaxFrameDuration:CMTimeMake(1, fps)];
         [m_pDevice unlockForConfiguration];
     }
 }
