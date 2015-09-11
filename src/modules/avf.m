@@ -237,7 +237,6 @@ void CppAVFCam::file_output_done(bool error)
                 std::cout << "   done recording " << this << std::endl;
 
         }
-        return;
     }
 }
 
@@ -246,7 +245,7 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
     if (!m_pDevice)
         return
 
-    if ( YES == [m_pDevice lockForConfiguration:NULL] ) {
+    if ( [m_pDevice lockForConfiguration:NULL] == YES ) {
         // should set these properties after output is added to session or it may be lost
         [m_pDevice setActiveVideoMinFrameDuration:CMTimeMake(1, self.fps)];
         [m_pDevice setActiveVideoMaxFrameDuration:CMTimeMake(1, self.fps)];
@@ -283,7 +282,7 @@ void CppAVFCam::get_device_formats()
     }
 }
 
-std::vector CppAVFCam::get_dimension()
+std::vector<unsigned int> CppAVFCam::get_dimension()
 {
     std::vector<unsigned int> dim;
     if (!m_pVideoInput)
