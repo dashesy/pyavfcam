@@ -13,7 +13,7 @@
 @class AVCaptureSession;
 @class AVCaptureDelegate;
 @class AVCaptureDeviceInput;
-@class AVCaptureFileOutput;
+@class AVCaptureMovieFileOutput;
 
 class VideoFrame;
 struct _object;
@@ -27,7 +27,7 @@ private:
     AVCaptureDevice * m_pDevice;              // Camera device
     AVCaptureDelegate * m_pCapture;           // Capture delegate
     AVCaptureDeviceInput * m_pVideoInput;
-    AVCaptureFileOutput * m_pVideoFileOutput;
+    AVCaptureMovieFileOutput * m_pVideoFileOutput;
 
 public:
     virtual void file_output_done(bool error);

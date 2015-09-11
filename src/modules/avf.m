@@ -191,7 +191,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
                 [m_pSession addInput:m_pVideoInput];
             NSLog(@"start      2");
             if (sink_file)
-                m_pVideoFileOutput = [[AVCaptureFileOutput alloc] init];
+                m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             NSLog(@"start      3");
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
