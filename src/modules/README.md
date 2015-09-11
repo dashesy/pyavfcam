@@ -1,2 +1,2 @@
-To make modules separate from Cython generated c files
+To make non-generated code separate from Cython generated files
 

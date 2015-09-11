@@ -261,7 +261,7 @@ void CppAVFCam::record(std::string path, unsigned int duration)
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    NSString* path_str = [NSString stringWithUTF8String:path.c_str()];
+    NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
 
     NSURL *url = [NSURL fileURLWithPath:path_str];
     [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
