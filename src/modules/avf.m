@@ -165,6 +165,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
     if (m_pObj) {
         if (import_pyavfcam()) {
             std::cerr << "[c+]  error in import_avf!\n";
+            Py_XDECREF(m_pObj);
+            m_pObj = NULL;
         } else {
             Py_XINCREF(m_pObj);
         }
@@ -183,17 +185,17 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         m_pSession = [[AVCaptureSession alloc] init];
         if (m_pSession) {
             NSError *error = nil;
-            NSLog(@"start      3");
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
+            NSLog(@"start      1");
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-
+            NSLog(@"start      2");
             if (sink_file)
                 m_pVideoFileOutput = [[AVCaptureFileOutput alloc] init];
-
+            NSLog(@"start      3");
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-
+            NSLog(@"start      4");
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
@@ -207,8 +209,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
             // Start the AV session
             [m_pSession startRunning];
+            NSLog(@"start      5");
         }
     }
+    NSLog(@"start      6");
     [pool drain];
 
     // Now raise if error detected above for RAII
@@ -218,6 +222,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         throw std::runtime_error("cannot create multimedia session (perhaps memory error)");
     if (sink_file && !m_pVideoFileOutput)
         throw std::runtime_error("cannot create file video sink");
+
+    std::cout << "   C++: created CppAVFCam at " << this << std::endl;
 }
 
 // Destructor
