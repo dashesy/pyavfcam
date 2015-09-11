@@ -33,11 +33,17 @@
 
 - (id)init
 {
-    [super init];
-    m_pInstance = NULL;
-    return self;
+    return [self initWithInstance:NULL];
 }
 
+- (id)initWithInstance:(CppAVFCam *)pInstance
+{
+    self = [super init];
+    if(self) {
+        m_pInstance = pInstance;
+    }
+    return self;
+}
 
 -(void)dealloc
 {
@@ -111,8 +117,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         }
     }
 
-    m_pCapture = [[AVCaptureDelegate alloc] init];
-    m_pCapture->m_pInstance = this;
+    // Connect this class with NSObject
+    m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -279,10 +285,10 @@ void CppAVFCam::get_device_formats()
 
 std::vector CppAVFCam::get_dimension()
 {
-    std::vector<unsigned int> dim
+    std::vector<unsigned int> dim;
     if (!m_pVideoInput)
         // TODO: raise error
-        return dim
+        return dim;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     NSArray* ports = m_pVideoInput.ports;
