@@ -230,6 +230,13 @@ CppAVFCam::~CppAVFCam()
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
+        for(AVCaptureInput *input1 in m_pSession.inputs) {
+            [m_pSession removeInput:input1];
+        }
+
+        for(AVCaptureOutput *output1 in m_pSession.outputs) {
+            [m_pSession removeOutput:output1];
+        }
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
@@ -242,16 +249,18 @@ CppAVFCam::~CppAVFCam()
     }
 
     NSLog(@"stop      2");
-    if (m_pCapture) {
-        [m_pCapture release];
-        m_pCapture = NULL;
-    }
-    NSLog(@"stop      3");
 
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
     }
+
+    NSLog(@"stop      3");
+    if (m_pCapture) {
+        [m_pCapture release];
+        m_pCapture = NULL;
+    }
+
     NSLog(@"stop      4");
 
     // Deallocate device at the end
