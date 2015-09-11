@@ -163,14 +163,6 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:this];
-
-    // Ownership of other is moved to this
-    other.m_pObj = NULL;
-    other.m_pSession = NULL;
-    other.m_pDevice = NULL;
-    other.m_pVideoInput = NULL;
-    other.m_pVideoFileOutput = NULL;
-    other.m_pCapture = NULL;
 }
 
 // designated constructor
@@ -311,6 +303,14 @@ CppAVFCam::~CppAVFCam()
 CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 {
     swap(*this, other);
+
+    // Ownership of other is moved to this
+    other.m_pObj = NULL;
+    other.m_pSession = NULL;
+    other.m_pDevice = NULL;
+    other.m_pVideoInput = NULL;
+    other.m_pVideoFileOutput = NULL;
+    other.m_pCapture = NULL;
 
     return *this;
 }
