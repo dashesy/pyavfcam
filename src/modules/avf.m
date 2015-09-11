@@ -310,7 +310,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 
 void swap(CppAVFCam& first, CppAVFCam& second)
 {
-    std::cout << "   swap " << &first << " and " << &first << std::endl;
+    std::cout << "   swap " << &first << " and " << &second << std::endl;
     // enable ADL (not necessary in our case, but good practice)
     using std::swap;
 
