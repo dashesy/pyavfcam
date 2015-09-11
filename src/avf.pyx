@@ -56,14 +56,15 @@ cdef class AVFCam(object):
         # the one and only reference
         self._ref = CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)
 
-    def record(self, video_name, duration=20):
+    def record(self, video_name, duration=20, blocking=True):
         """record a video
         :param video_name: file path to create (will overwrite if it exists)
         :param duration: duration of video to record (in seconds)
+        :param blocking: if should block until recording is done (or error happens)
         """
 
         cdef string video_name_str = video_name.encode('UTF-8')
-        self._ref.record(video_name_str, duration)
+        self._ref.record(video_name_str, duration, blocking)
 
     def stop_recording(self):
         """stop current recording

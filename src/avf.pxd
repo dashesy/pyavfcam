@@ -18,6 +18,6 @@ cdef extern from "modules/avf.h":
     cdef cppclass CppAVFCam:
         CppAVFCam()
         CppAVFCam(bint sink_file, bint sink_callback, cpy_ref.PyObject *obj) except +
-        void record(string path, unsigned int duration)
-        void stop_recording()
+        void record(string path, unsigned int duration, bint blocking) except +
+        void stop_recording() except +
         vector[unsigned int] get_dimension()

@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+#include <stdexcept>
 #include <iostream>
 #include "avf.h"
 #include "../avf_api.h"
@@ -260,11 +261,12 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned i
 }
 
 // Record to file video sink at given file path
-void CppAVFCam::record(std::string path, unsigned int duration)
+void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 {
-    if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
-        // TODO: raise error
-        return;
+    if (!m_pCapture || !m_pSession)
+        throw std::invalid_argument( "session not initialized" );
+    if (!m_pVideoFileOutput)
+        throw std::invalid_argument( "file video sink not initialized" );
 
     if (duration == 0)
         duration = 1;
@@ -278,22 +280,32 @@ void CppAVFCam::record(std::string path, unsigned int duration)
     NSError *error = nil;
     // AVFoundation will not overwrite but we do, remove the file if it exists
     [[NSFileManager defaultManager] removeItemAtURL:url error:&error];
+    if (error && error.code != NSFileNoSuchFileError) {
+        // The only accepted error is if files does not exist yet
 
-    // Set the duration of the video, pretend fps is 600, be a nice sheep
-    [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
+    } else {
+        error = nil;
 
-    // Start recordign the video and let me know when it is done
-    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+        // Set the duration of the video, pretend fps is 600, be a nice sheep
+        [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
+
+        // Start recordign the video and let me know when it is done
+        [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+    }
 
     [pool drain];
+
+    if (error)
+        throw std::invalid_argument( "invalid or inaccessable path (error)" );
 }
 
 // Stop recording to file if recording in progress
 void CppAVFCam::stop_recording()
 {
-    if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
-        // TODO: raise error
-        return;
+    if (!m_pCapture || !m_pSession)
+        throw std::invalid_argument( "session not initialized" );
+    if (!m_pVideoFileOutput)
+        throw std::invalid_argument( "file video sink not initialized" );
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
