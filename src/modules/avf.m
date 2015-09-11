@@ -192,7 +192,7 @@ CppAVFCam::~CppAVFCam()
 
     [pool drain];
 
-    // decrease refcount to Python binding
+    // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
 }
@@ -223,20 +223,21 @@ void swap(CppAVFCam& first, CppAVFCam& second)
 // Callback to Python
 void CppAVFCam::file_output_done(bool error)
 {
-    if (m_pObj) {
-        int overridden;
-        PyObject * kwargs = Py_BuildValue("{}");
-        PyObject * args = Py_BuildValue("(i)", error);
+    if (!m_pObj)
+        return
 
-        // Call a virtual overload, if it exists
-        cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
-        if (!overridden) {
-            if (error)
-                std::cout << "   error recording " << this << std::endl;
-            else
-                std::cout << "   done recording " << this << std::endl;
+    int overridden;
+    PyObject * kwargs = Py_BuildValue("{}");
+    PyObject * args = Py_BuildValue("(i)", error);
 
-        }
+    // Call a virtual overload, if it exists
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+    if (!overridden) {
+        if (error)
+            std::cout << "   error recording " << this << std::endl;
+        else
+            std::cout << "   done recording " << this << std::endl;
+
     }
 }
 

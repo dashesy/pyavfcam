@@ -1,15 +1,33 @@
 """
 Created on Sept 7, 2015
 @author: dashesy
-Purpose: Access AVFoundation as a Cython class
+Purpose: Access AVFoundation as a Cython extension class
 """
 
 from avf cimport CppAVFCam, string
 cimport cpython.ref as cpy_ref
 
+# the callback may come from a non-python thread
+PyEval_InitThreads()
+
+
+cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs) with gil:
+    """single point of callback entry from C++ land
+    :param overridden: return back to cpp if the method is implemented in Python
+    :param method: bound method name to run
+    """
+    # see if it is implemented in a derived class
+    func = getattr(self, method, None)
+    if not callable(func):
+        overridden[0] = 0
+    else:
+        overridden[0] = 1
+        func(*args, **kwargs)
+
+
 cdef class AVFCam(object):
     """
-    AVFoundation simple camera interface
+    AVFoundation simple camera interface (base class)
 
     User should derive this class to get the callbacks, we do not provide any default implementations
     """
@@ -28,7 +46,8 @@ cdef class AVFCam(object):
         if sinks is None:
             sink_file = True
         else:
-            assert isinstance(sinks, list)
+            if isinstance(sinks, basestring):
+                sinks = [sinks]
             if 'file' in sinks:
                 sink_file = True
             if 'callback' in sinks:
@@ -50,17 +69,3 @@ cdef class AVFCam(object):
         """stop current recording
         """
         self._ref.stop_recording()
-
-
-cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
-    """single point of entry from C++ land
-    :param overridden: if the method is implemented
-    :param method: bound method name to run
-    """
-    # see if it is implemented in a derived class
-    func = getattr(self, method, None)
-    if not callable(func):
-        overridden[0] = 0
-    else:
-        overridden[0] = 1
-        func(*args, **kwargs)
