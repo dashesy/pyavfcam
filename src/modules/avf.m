@@ -271,6 +271,10 @@ void CppAVFCam::record(std::string path, unsigned int duration)
     NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path_str];
 
+    NSError *error = nil;
+    // AVFoundation will not overwrite but we do, remove the file if it exists
+    [[NSFileManager defaultManager] removeItemAtURL:url error:&error];
+
     // Set the duration of the video, pretend fps is 600, be a nice sheep
     [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
 

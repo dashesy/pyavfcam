@@ -42,6 +42,7 @@ cdef class AVFCam(object):
         :param video_name: file path to create (will overwrite if it exists)
         :param duration: duration of video to record (in seconds)
         """
+
         cdef string video_name_str = video_name.encode('UTF-8')
         self._ref.record(video_name_str, duration)
 
@@ -49,6 +50,7 @@ cdef class AVFCam(object):
         """stop current recording
         """
         self._ref.stop_recording()
+
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     """single point of entry from C++ land
