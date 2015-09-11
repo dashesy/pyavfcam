@@ -67,6 +67,7 @@ public:
     NSLog(@"initWithInstance      %@", pInstance);
     self = [super init];
     if(self) {
+        NSLog(@"done");
         m_pInstance = pInstance;
         m_semFile = NULL;
     }
@@ -184,8 +185,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         }
     }
 
+    NSLog(@"start      0");
     // Connect this class with NSObject
     m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
+    NSLog(@"start      100");
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
