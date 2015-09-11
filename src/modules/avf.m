@@ -60,7 +60,7 @@
 - (void)blockFileOutput:(uint64_t)seconds
 {
     if (!m_semFile)
-        return
+        return;
     dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, seconds);
     dispatch_semaphore_wait(m_semFile, timeout);
 }
@@ -258,7 +258,7 @@ void swap(CppAVFCam& first, CppAVFCam& second)
 void CppAVFCam::file_output_done(bool error)
 {
     if (!m_pObj)
-        return
+        return;
 
     int overridden;
     PyObject * kwargs = Py_BuildValue("{}");
