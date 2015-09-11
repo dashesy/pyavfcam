@@ -98,7 +98,7 @@ public:
 
 -(void)dealloc
 {
-    NSLog(@"cap dealoc      sem %@ instance %@", m_semFile, m_pInstance);
+    std::cout << "   cap dealoc sem " << m_semFile  << " instance " << m_pInstance << std::endl;
 
     if (m_semFile) {
         NSLog(@"had sem");
@@ -151,7 +151,7 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
-    std::cout << "   C++: copy constructing CppAVFCam at " << this  << "from" << &other << std::endl;
+    std::cout << "   C++: copy constructing CppAVFCam at " << this  << " from " << &other << std::endl;
     // Shallow copy the member pointers
     m_pObj = other.m_pObj;
     m_pSession = other.m_pSession;
