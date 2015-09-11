@@ -2,8 +2,10 @@
 // Simple video capture in OSX using AVFoundation
 //
 // 2015 dashesy
-//--------------------------------------
-
+//--------------------------------------------------------------
+//
+// Keep the resemblence of a pure C++ header as much as possible
+//
 
 #include <vector>
 
