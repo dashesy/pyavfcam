@@ -240,10 +240,13 @@ void CppAVFCam::file_output_done(bool error)
     }
 }
 
-void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
+void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
 {
     if (!m_pDevice)
         return;
+
+    if (fps == 0)
+        fps = 1;
 
     if ( [m_pDevice lockForConfiguration:NULL] == YES ) {
         // should set these properties after output is added to session or it may be lost

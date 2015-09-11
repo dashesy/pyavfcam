@@ -40,7 +40,7 @@ public:
     CppAVFCam & operator= (CppAVFCam other);
     friend void swap(CppAVFCam& first, CppAVFCam& second); // nothrow
 
-    void set_settings(unsigned int width, unsigned int height, float fps);
+    void set_settings(unsigned int width, unsigned int height, unsigned int fps);
     void record(std::string path, unsigned int duration);
     void stop_recording();
     void get_device_formats();
