@@ -186,16 +186,13 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         if (m_pSession) {
             NSError *error = nil;
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
-            NSLog(@"start      1");
+//            NSLog(@"start      1");
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-            NSLog(@"start      2");
             if (sink_file)
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-            NSLog(@"start      3");
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-            NSLog(@"start      4");
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
@@ -366,14 +363,14 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 
         // Request for signaling when output done
         if (blocking)
-            [m_pVideoFileOutput signalFileOutput];
+            [m_pCapture signalFileOutput];
 
         // Start recordign the video and let me know when it is done
         [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
 
         // Block on file output, time out in twice the expected time!
         if (blocking)
-            [m_pVideoFileOutput blockFileOutput:(uint64_t)(2 * duration * NSEC_PER_SEC)];
+            [m_pCapture blockFileOutput:(uint64_t)(2 * duration * NSEC_PER_SEC)];
     }
 
     [pool drain];
