@@ -100,7 +100,7 @@ public:
     NSLog(@"cap dealoc      %@", m_semFile);
 
     if (m_semFile) {
-        NSLog(@"had sem")
+        NSLog(@"had sem");
         dispatch_release(m_semFile);
         m_semFile = NULL;
     }
