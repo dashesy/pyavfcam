@@ -127,37 +127,45 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
     // TODO: option to select among cameras
     m_pDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if (m_pDevice) {
+    if (m_pDevice && m_pCapture) {
         m_pSession = [[AVCaptureSession alloc] init];
-        NSError *error = nil;
-        NSLog(@"start      3");
-        m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
-        if (m_pVideoInput)
-            [m_pSession addInput:m_pVideoInput];
+        if (m_pSession) {
+            NSError *error = nil;
+            NSLog(@"start      3");
+            m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
+            if (m_pVideoInput)
+                [m_pSession addInput:m_pVideoInput];
 
-        if (sink_file)
-            m_pVideoFileOutput = [[AVCaptureFileOutput alloc] init];
+            if (sink_file)
+                m_pVideoFileOutput = [[AVCaptureFileOutput alloc] init];
 
-        if (m_pVideoFileOutput)
-            [m_pSession addOutput:m_pVideoFileOutput];
+            if (m_pVideoFileOutput)
+                [m_pSession addOutput:m_pVideoFileOutput];
 
-//        if (sink_callback) {
-//            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
-//            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
-//            [video_buffer_output setSampleBufferDelegate:self queue:videoQueue];
-//
-//            video_buffer_output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
-//            video_buffer_output.alwaysDiscardsLateVideoFrames=YES;
-//        }
-//        if (video_buffer_output)
-//            [m_pSession addOutput:video_buffer_output];
+    //        if (sink_callback) {
+    //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
+    //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
+    //            [video_buffer_output setSampleBufferDelegate:self queue:videoQueue];
+    //
+    //            video_buffer_output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
+    //            video_buffer_output.alwaysDiscardsLateVideoFrames=YES;
+    //        }
+    //        if (video_buffer_output)
+    //            [m_pSession addOutput:video_buffer_output];
 
-        // Start the AV session
-        [m_pSession startRunning];
+            // Start the AV session
+            [m_pSession startRunning];
+        }
     }
     [pool drain];
 
     // Now raise if error detected above for RAII
+    if (!m_pDevice)
+        throw std::runtime_error("cannot access the webcam video source");
+    if (!m_pCapture || !m_pSession)
+        throw std::runtime_error("cannot create multimedia session (perhaps memory error)");
+    if (sink_file && !m_pVideoFileOutput)
+        throw std::runtime_error("cannot create file video sink");
 }
 
 // Destructor
