@@ -155,9 +155,12 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     m_pObj = other.m_pObj;
     m_pSession = other.m_pSession;
     m_pDevice = other.m_pDevice;
-    m_pCapture = other.m_pCapture;
     m_pVideoInput = other.m_pVideoInput;
     m_pVideoFileOutput = other.m_pVideoFileOutput;
+
+    m_pCapture = other.m_pCapture;
+    if (m_pCapture)
+        [m_pCapture setInstance:this];
 
     // TODO: now deallocate other gracefully
 }
@@ -195,13 +198,16 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         if (m_pSession) {
             NSError *error = nil;
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
-//            NSLog(@"start      1");
+            NSLog(@"start      1");
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
+            NSLog(@"start      2");
             if (sink_file)
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+            NSLog(@"start      3");
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
+            NSLog(@"start      4");
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
@@ -215,9 +221,11 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
             // Start the AV session
             [m_pSession startRunning];
+            NSLog(@"start      5");
         }
     }
     [pool drain];
+    NSLog(@"start      6");
 
     // Now raise if error detected above for RAII
     if (!m_pDevice)
