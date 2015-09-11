@@ -64,12 +64,18 @@ public:
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
 {
+    NSLog(@"initWithInstance      %@", pInstance);
     self = [super init];
     if(self) {
         m_pInstance = pInstance;
         m_semFile = NULL;
     }
     return self;
+}
+
+- (void)setInstance:(CppAVFCam *)pInstance
+{
+    m_pInstance = pInstance;
 }
 
 - (void)signalFileOutput
@@ -94,6 +100,7 @@ public:
     NSLog(@"cap dealoc      %@", m_semFile);
 
     if (m_semFile) {
+        NSLog(@"had sem")
         dispatch_release(m_semFile);
         m_semFile = NULL;
     }
@@ -240,35 +247,35 @@ CppAVFCam::~CppAVFCam()
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
+
+        NSLog(@"stop      1");
     }
 
-    NSLog(@"stop      1");
+
     if (m_pVideoInput) {
         [m_pVideoInput release];
         m_pVideoInput = NULL;
+        NSLog(@"stop      2");
     }
-
-    NSLog(@"stop      2");
 
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
+        NSLog(@"stop      3");
     }
 
-    NSLog(@"stop      3");
     if (m_pCapture) {
         [m_pCapture release];
         m_pCapture = NULL;
+        NSLog(@"stop      4");
     }
-
-    NSLog(@"stop      4");
 
     // Deallocate device at the end
     if (m_pDevice) {
         [m_pDevice release];
         m_pDevice = NULL;
+        NSLog(@"stop      5");
     }
-    NSLog(@"stop      5");
 
     [pool drain];
     NSLog(@"stop      6");
@@ -289,6 +296,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 
 void swap(CppAVFCam& first, CppAVFCam& second)
 {
+    std::cout << "   swap " << first << second << std::endl;
     // enable ADL (not necessary in our case, but good practice)
     using std::swap;
 
@@ -297,9 +305,14 @@ void swap(CppAVFCam& first, CppAVFCam& second)
     swap(first.m_pObj, second.m_pObj);
     swap(first.m_pSession, second.m_pSession);
     swap(first.m_pDevice, second.m_pDevice);
-    swap(first.m_pCapture, second.m_pCapture);
     swap(first.m_pVideoInput, second.m_pVideoInput);
     swap(first.m_pVideoFileOutput, second.m_pVideoFileOutput);
+
+    swap(first.m_pCapture, second.m_pCapture);
+    if (first.m_pCapture)
+        [first.m_pCapture setInstance:&first];
+    if (second.m_pCapture)
+        [second.m_pCapture setInstance:&second];
 }
 
 // File output callback to Python
