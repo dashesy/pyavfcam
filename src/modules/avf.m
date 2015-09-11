@@ -64,10 +64,8 @@ public:
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
 {
-    NSLog(@"initWithInstance      %@", pInstance);
     self = [super init];
     if(self) {
-        NSLog(@"done");
         m_pInstance = pInstance;
         m_semFile = NULL;
     }
