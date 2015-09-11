@@ -78,11 +78,10 @@
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   fromConnection:(AVCaptureConnection *)connection
 {
-    // TODO: implement for callback
+    if (!m_pInstance)
+        return;
 
-    // Get a bitmap representation of the frame using CoreImage and Cocoa calls
-
-    // Pass an actual reference to a custom Frame class up
+    m_pInstance->video_output(sampleBuffer);
 
 }
 
@@ -91,6 +90,9 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
+    if (!m_pInstance)
+        return;
+
     m_pInstance->file_output_done(error != NULL);
     if (m_semFile) {
         dispatch_semaphore_signal(m_semFile);
@@ -254,7 +256,7 @@ void swap(CppAVFCam& first, CppAVFCam& second)
     swap(first.m_pVideoFileOutput, second.m_pVideoFileOutput);
 }
 
-// Callback to Python
+// File output callback to Python
 void CppAVFCam::file_output_done(bool error)
 {
     if (!m_pObj)
@@ -273,6 +275,32 @@ void CppAVFCam::file_output_done(bool error)
             std::cout << "   done recording " << this << std::endl;
 
     }
+}
+
+// Video frame callback to Python
+void CppAVFCam::video_output(CMSampleBufferRef sampleBuffer)
+{
+    if (!m_pObj)
+        return;
+
+    // Get a bitmap representation of the frame using CoreImage and Cocoa calls
+
+    // Pass an actual reference to a custom Frame class up
+
+//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(source);
+//    CVPixelBufferLockBaseAddress(imageBuffer,0);
+//
+//    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+//    size_t width = CVPixelBufferGetWidth(imageBuffer);
+//    size_t height = CVPixelBufferGetHeight(imageBuffer);
+//    void *src_buff = CVPixelBufferGetBaseAddress(imageBuffer);
+//
+//    NSData *data = [NSData dataWithBytes:src_buff length:bytesPerRow * height];
+//
+//    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+
+    // TODO: implement for callback
+
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
