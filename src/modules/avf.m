@@ -91,6 +91,8 @@ public:
 
 -(void)dealloc
 {
+    NSLog(@"cap dealoc      %@", m_semFile);
+
     if (m_semFile) {
         dispatch_release(m_semFile);
         m_semFile = NULL;
@@ -264,7 +266,6 @@ CppAVFCam::~CppAVFCam()
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
     NSLog(@"stop      7");
-
 }
 
 // Assignment operator
@@ -295,6 +296,7 @@ void CppAVFCam::file_output_done(bool error)
 {
     if (!m_pObj)
         return;
+    std::cout << "   file output " << this << std::endl;
 
     int overridden;
     PyObject * kwargs = Py_BuildValue("{}");
@@ -355,6 +357,8 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
     // Get the string and expand it to a file URL
     NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path_str];
+
+    NSLog(@"file url      %@", url);
 
     NSError *file_error = nil;
     // AVFoundation will not overwrite but we do, remove the file if it exists
