@@ -206,10 +206,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
             // Start the AV session
             [m_pSession startRunning];
-            NSLog(@"start      5");
         }
     }
-    NSLog(@"start      6");
     [pool drain];
 
     // Now raise if error detected above for RAII
@@ -234,33 +232,39 @@ CppAVFCam::~CppAVFCam()
         [m_pSession release];
         m_pSession = NULL;
     }
-
+    NSLog(@"stop      1");
     if (m_pCapture) {
         [m_pCapture release];
         m_pCapture = NULL;
     }
-
+    NSLog(@"stop      2");
     if (m_pVideoInput) {
         [m_pVideoInput release];
         m_pVideoInput = NULL;
     }
+    NSLog(@"stop      3");
 
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
     }
+    NSLog(@"stop      4");
 
     // Deallocate device at the end
     if (m_pDevice) {
         [m_pDevice release];
         m_pDevice = NULL;
     }
+    NSLog(@"stop      5");
 
     [pool drain];
+    NSLog(@"stop      6");
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
+    NSLog(@"stop      7");
+
 }
 
 // Assignment operator
