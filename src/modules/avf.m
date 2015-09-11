@@ -243,7 +243,7 @@ void CppAVFCam::file_output_done(bool error)
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
 {
     if (!m_pDevice)
-        return
+        return;
 
     if ( [m_pDevice lockForConfiguration:NULL] == YES ) {
         // should set these properties after output is added to session or it may be lost
@@ -257,7 +257,7 @@ void CppAVFCam::record(std::string path, unsigned int duration)
 {
     if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
         // TODO: raise error
-        return
+        return;
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
@@ -272,7 +272,7 @@ void CppAVFCam::record(std::string path, unsigned int duration)
 void CppAVFCam::get_device_formats()
 {
     if (!m_pDevice)
-        return
+        return;
 
     for(AVCaptureDeviceFormat *vFormat in [m_pDevice formats] )
     {
