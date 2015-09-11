@@ -152,6 +152,7 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
     std::cout << "   C++: copy constructing CppAVFCam at " << this  << " from " << &other << std::endl;
+
     // Shallow copy the member pointers
     m_pObj = other.m_pObj;
     m_pSession = other.m_pSession;
@@ -163,7 +164,13 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     if (m_pCapture)
         [m_pCapture setInstance:this];
 
-    // TODO: now deallocate other gracefully
+    // Ownership of other is moved to this
+    other.m_pObj = NULL;
+    other.m_pSession = NULL;
+    other.m_pDevice = NULL;
+    other.m_pVideoInput = NULL;
+    other.m_pVideoFileOutput = NULL;
+    other.m_pCapture = NULL;
 }
 
 // designated constructor
