@@ -251,9 +251,37 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, float fps)
         [m_pDevice setActiveVideoMaxFrameDuration:CMTimeMake(1, fps)];
         [m_pDevice unlockForConfiguration];
     }
+
+    // TODO: set width and height settings
 }
 
+// Record to file video sink at given file path
 void CppAVFCam::record(std::string path, unsigned int duration)
+{
+    if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
+        // TODO: raise error
+        return;
+
+    if (duration == 0)
+        duration = 1;
+
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
+    // Get the string and expand it to a file URL
+    NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+    NSURL *url = [NSURL fileURLWithPath:path_str];
+
+    // Set the duration of the video, pretend fps is 600, be a nice sheep
+    [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
+
+    // Start recordign the video and let me know when it is done
+    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+
+    [pool drain];
+}
+
+// Stop recording to file if recording in progress
+void CppAVFCam::stop_recording()
 {
     if (!m_pVideoFileOutput || !m_pCapture || !m_pSession)
         // TODO: raise error
@@ -261,10 +289,9 @@ void CppAVFCam::record(std::string path, unsigned int duration)
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+    [m_pVideoFileOutput stopRecording];
 
-    NSURL *url = [NSURL fileURLWithPath:path_str];
-    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+    // Note that some samples will be flushed in the backgrouns and the callback will know when the file is ready
 
     [pool drain];
 }
@@ -280,6 +307,8 @@ void CppAVFCam::get_device_formats()
         float max_fps = ((AVFrameRateRange*)[vFormat.videoSupportedFrameRateRanges objectAtIndex:0]).maxFrameRate;
         int format = CMFormatDescriptionGetMediaSubType(description);
     }
+
+    // TODO: return a list with items that can be passed to a set_format method
 }
 
 std::vector<unsigned int> CppAVFCam::get_dimension()

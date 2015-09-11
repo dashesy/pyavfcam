@@ -45,6 +45,11 @@ cdef class AVFCam(object):
         cdef string video_name_str = video_name.encode('UTF-8')
         self._ref.record(video_name_str, duration)
 
+    def stop_recording(self):
+        """stop current recording
+        """
+        self._ref.stop_recording()
+
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     """single point of entry from C++ land
     :param overridden: if the method is implemented

@@ -42,6 +42,7 @@ public:
 
     void set_settings(unsigned int width, unsigned int height, float fps);
     void record(std::string path, unsigned int duration);
+    void stop_recording();
     void get_device_formats();
     std::vector<unsigned int> get_dimension();
 };

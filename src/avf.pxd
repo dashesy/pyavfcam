@@ -13,3 +13,4 @@ cdef extern from "modules/avf.h":
         CppAVFCam()
         CppAVFCam(bint sink_file, bint sink_callback, cpy_ref.PyObject *obj) except +
         void record(string path, unsigned int duration)
+        void stop_recording()
