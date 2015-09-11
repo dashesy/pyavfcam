@@ -296,7 +296,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 
 void swap(CppAVFCam& first, CppAVFCam& second)
 {
-    std::cout << "   swap " << first << second << std::endl;
+    NSLog(@"swap call");
     // enable ADL (not necessary in our case, but good practice)
     using std::swap;
 
