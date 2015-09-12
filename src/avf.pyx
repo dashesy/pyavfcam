@@ -32,8 +32,8 @@ cdef class AVFCam(object):
     User should derive this class to get the callbacks, we do not provide any default implementations
     """
 
-    # reference to the actual object
-    cdef CppAVFCam _ref
+    # # reference to the actual object
+    # cdef CppAVFCam _ref
 
     def __init__(self, sinks=None, *args, **kwargs):
         """

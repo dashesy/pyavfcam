@@ -125,6 +125,7 @@ public:
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
+    std::cout << "   done output " << std::endl;
     if (!m_pInstance)
         return;
 
@@ -219,6 +220,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 // Destructor
 CppAVFCam::~CppAVFCam()
 {
+    std::cout << "   destructor " << this << std::endl;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
