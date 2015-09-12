@@ -79,7 +79,6 @@ public:
 
 - (void)signalFileOutput
 {
-    std::cout << "   signal CppAVFCam at " << m_pInstance << std::endl;
     // Remove any possible leftovers
     if (m_semFile)
         dispatch_release(m_semFile);
@@ -91,8 +90,10 @@ public:
 {
     if (!m_semFile)
         return;
+    std::cout << "   wait " << timeout << std::endl;
     dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, seconds);
-    dispatch_semaphore_wait(m_semFile, timeout);
+    long ret = dispatch_semaphore_wait(m_semFile, timeout);
+    std::cout << "   wait ret " << ret << std::endl;
 }
 
 -(void)dealloc
@@ -218,10 +219,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 // Destructor
 CppAVFCam::~CppAVFCam()
 {
-    std::cout << "   destroying " << this << std::endl;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
+        std::cout << "   destroying " << this << std::endl;
         [m_pSession beginConfiguration];
         for(AVCaptureInput *input1 in m_pSession.inputs) {
             [m_pSession removeInput:input1];

@@ -35,7 +35,7 @@ cdef class AVFCam(object):
     # reference to the actual object
     cdef CppAVFCam _ref
 
-    def __cinit__(self, sinks=None):
+    def __init__(self, sinks=None, *args, **kwargs):
         """
         :param sinks: list of video sinks
             'file': File output (default)
