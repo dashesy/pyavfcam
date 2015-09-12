@@ -142,30 +142,23 @@ CppAVFCam::CppAVFCam()
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
-    std::cout << "   C++: creating default CppAVFCam at " << this << std::endl;
 }
 
-// copy-constructor
+// move-constructor
 CppAVFCam::CppAVFCam(CppAVFCam&& other)
-    : m_pObj(NULL),
-      m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
-      m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
+    : CppAVFCam()
 {
-    std::cout << "   C++: move constructing CppAVFCam to " << this  << " from " << &other << std::endl;
-
     *this = std::move(other);
-
-    if (m_pCapture)
-        [m_pCapture setInstance:this];
+//
+//    if (m_pCapture)
+//        [m_pCapture setInstance:this];
 }
 
 // designated constructor
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
-    : m_pObj(pObj),
-      m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
-      m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
+    : CppAVFCam()
 {
-    std::cout << "   C++: creating CppAVFCam at " << this << std::endl;
+    m_pObj = pObj;
 
     if (m_pObj) {
         if (import_pyavfcam()) {
@@ -177,10 +170,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         }
     }
 
-    NSLog(@"start      0");
     // Connect this class with NSObject
     m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
-    NSLog(@"start      100");
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -193,16 +184,12 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         if (m_pSession) {
             NSError *error = nil;
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
-            NSLog(@"start      1");
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-            NSLog(@"start      2");
             if (sink_file)
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
-            NSLog(@"start      3");
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-            NSLog(@"start      4");
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
@@ -216,11 +203,9 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
             // Start the AV session
             [m_pSession startRunning];
-            NSLog(@"start      5");
         }
     }
     [pool drain];
-    NSLog(@"start      6");
 
     // Now raise if error detected above for RAII
     if (!m_pDevice)
@@ -229,14 +214,11 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         throw std::runtime_error("cannot create multimedia session (perhaps memory error)");
     if (sink_file && !m_pVideoFileOutput)
         throw std::runtime_error("cannot create file video sink");
-
-    std::cout << "   C++: created CppAVFCam at " << this << std::endl;
 }
 
 // Destructor
 CppAVFCam::~CppAVFCam()
 {
-    std::cout << "   C++: destroying CppAVFCam at " << this << std::endl;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
@@ -253,50 +235,40 @@ CppAVFCam::~CppAVFCam()
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
-
-        NSLog(@"stop      1");
     }
 
 
     if (m_pVideoInput) {
         [m_pVideoInput release];
         m_pVideoInput = NULL;
-        NSLog(@"stop      2");
     }
 
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
-        NSLog(@"stop      3");
     }
 
     if (m_pCapture) {
         [m_pCapture release];
         m_pCapture = NULL;
-        NSLog(@"stop      4");
     }
 
     // Deallocate device at the end
     if (m_pDevice) {
         [m_pDevice release];
         m_pDevice = NULL;
-        NSLog(@"stop      5");
     }
 
     [pool drain];
-    NSLog(@"stop      6");
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
-    NSLog(@"stop      7");
 }
 
 // Move assignment operator
 CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 {
-    std::cout << "   move " << &other << " to " << this << std::endl;
-
     m_pObj = other.m_pObj;
     m_pSession = other.m_pSession;
     m_pDevice = other.m_pDevice;
@@ -320,9 +292,10 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 // File output callback to Python
 void CppAVFCam::file_output_done(bool error)
 {
+    std::cout << "   file output " << m_pObj << std::endl;
+
     if (!m_pObj)
         return;
-    std::cout << "   file output " << this << std::endl;
 
     int overridden;
     PyObject * kwargs = Py_BuildValue("{}");
@@ -383,8 +356,6 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
     // Get the string and expand it to a file URL
     NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path_str];
-
-    NSLog(@"file url      %@", url);
 
     NSError *file_error = nil;
     // AVFoundation will not overwrite but we do, remove the file if it exists
