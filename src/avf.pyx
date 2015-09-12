@@ -4,7 +4,7 @@ Created on Sept 7, 2015
 Purpose: Access AVFoundation as a Cython extension class
 """
 
-from avf cimport CppAVFCam, string, PyEval_InitThreads
+from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf
 cimport cpython.ref as cpy_ref
 
 # the callback may come from a non-python thread
@@ -54,7 +54,7 @@ cdef class AVFCam(object):
                 sink_callback = True
 
         # the one and only reference
-        self._ref = CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)
+        self._ref = std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self))
 
     def record(self, video_name, duration=20, blocking=True):
         """record a video

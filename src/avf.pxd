@@ -21,3 +21,6 @@ cdef extern from "modules/avf.h":
         void record(string path, unsigned int duration, bint blocking) except +
         void stop_recording() except +
         vector[unsigned int] get_dimension()
+
+cdef extern from "<utility>" namespace "std":
+    cdef CppAVFCam std_move_avf "std::move" (CppAVFCam) nogil

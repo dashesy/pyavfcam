@@ -146,21 +146,15 @@ CppAVFCam::CppAVFCam()
 }
 
 // copy-constructor
-CppAVFCam::CppAVFCam(const CppAVFCam& other)
+CppAVFCam::CppAVFCam(CppAVFCam&& other)
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
-    std::cout << "   C++: copy constructing CppAVFCam at " << this  << " from " << &other << std::endl;
+    std::cout << "   C++: move constructing CppAVFCam to " << this  << " from " << &other << std::endl;
 
-    // Shallow copy the member pointers
-    m_pObj = other.m_pObj;
-    m_pSession = other.m_pSession;
-    m_pDevice = other.m_pDevice;
-    m_pVideoInput = other.m_pVideoInput;
-    m_pVideoFileOutput = other.m_pVideoFileOutput;
+    *this = std::move(other);
 
-    m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:this];
 }
