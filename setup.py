@@ -39,7 +39,7 @@ if build_ext:
                          '-framework', 'Foundation',
                          ],
         extra_compile_args=['-ObjC++'],
-        language="c++11",
+        language="c++",
     )
 else:
     avf_module = Extension(
@@ -51,7 +51,7 @@ else:
                          '-framework', 'Foundation',
                          ],
         extra_compile_args=['-ObjC++'],
-        language="c++11",
+        language="c++",
     )
 
     # noinspection PyPep8Naming
