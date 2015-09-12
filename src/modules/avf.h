@@ -37,7 +37,7 @@ public:
 
     CppAVFCam();
     CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj=NULL);
-    CppAVFCam(CppAVFCam& other);
+    CppAVFCam(const CppAVFCam& other);
     virtual ~CppAVFCam();
 
     CppAVFCam & operator= (CppAVFCam &&other);
