@@ -146,7 +146,7 @@ CppAVFCam::CppAVFCam()
 }
 
 // copy-constructor
-CppAVFCam::CppAVFCam(const CppAVFCam& other)
+CppAVFCam::CppAVFCam(CppAVFCam& other)
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
@@ -163,17 +163,24 @@ CppAVFCam::CppAVFCam(const CppAVFCam& other)
     m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:this];
+
+    // Ownership of other is moved to this
+    other.m_pObj = NULL;
+    other.m_pSession = NULL;
+    other.m_pDevice = NULL;
+    other.m_pVideoInput = NULL;
+    other.m_pVideoFileOutput = NULL;
+    other.m_pCapture = NULL;
 }
 
 // designated constructor
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
-    : m_pObj(NULL),
+    : m_pObj(pObj),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
 {
     std::cout << "   C++: creating CppAVFCam at " << this << std::endl;
 
-    m_pObj = pObj;
     if (m_pObj) {
         if (import_pyavfcam()) {
             std::cerr << "[c+]  error in import_avf!\n";
@@ -303,14 +310,6 @@ CppAVFCam::~CppAVFCam()
 CppAVFCam & CppAVFCam::operator= (CppAVFCam other)
 {
     swap(*this, other);
-
-    // Ownership of other is moved to this
-    other.m_pObj = NULL;
-    other.m_pSession = NULL;
-    other.m_pDevice = NULL;
-    other.m_pVideoInput = NULL;
-    other.m_pVideoFileOutput = NULL;
-    other.m_pCapture = NULL;
 
     return *this;
 }
