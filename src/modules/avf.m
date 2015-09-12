@@ -146,7 +146,7 @@ CppAVFCam::CppAVFCam()
 }
 
 // copy-constructor
-CppAVFCam::CppAVFCam(CppAVFCam& other)
+CppAVFCam::CppAVFCam(const CppAVFCam& other)
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
