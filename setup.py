@@ -38,7 +38,7 @@ if build_ext:
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
                          ],
-        extra_compile_args=['-ObjC++11'],
+        extra_compile_args=['-ObjC++', '-std=c++11'],
         language="c++",
     )
 else:
@@ -50,7 +50,7 @@ else:
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
                          ],
-        extra_compile_args=['-ObjC++11'],
+        extra_compile_args=['-ObjC++', '-std=c++11'],
         language="c++",
     )
 
