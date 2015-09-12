@@ -303,12 +303,12 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 {
     std::cout << "   move " << &other << " to " << this << std::endl;
 
-    m_pObj = second.m_pObj;
-    m_pSession = second.m_pSession;
-    m_pDevice = second.m_pDevice;
-    m_pVideoInput = second.m_pVideoInput;
-    m_pVideoFileOutput = second.m_pVideoFileOutput;
-    m_pCapture = second.m_pCapture;
+    m_pObj = other.m_pObj;
+    m_pSession = other.m_pSession;
+    m_pDevice = other.m_pDevice;
+    m_pVideoInput = other.m_pVideoInput;
+    m_pVideoFileOutput = other.m_pVideoFileOutput;
+    m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:&first];
 
