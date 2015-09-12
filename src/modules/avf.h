@@ -37,10 +37,10 @@ public:
 
     CppAVFCam();
     CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj=NULL);
-    CppAVFCam(const CppAVFCam& other);
+    CppAVFCam(CppAVFCam& other);
     virtual ~CppAVFCam();
 
-    CppAVFCam & operator= (CppAVFCam &other);
+    CppAVFCam & operator= (const CppAVFCam &other);
     friend void swap(CppAVFCam& first, CppAVFCam& second); // nothrow
 
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
