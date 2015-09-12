@@ -90,7 +90,7 @@ public:
 {
     if (!m_semFile)
         return;
-    std::cout << "   wait " << timeout << std::endl;
+    std::cout << "   wait " << seconds << std::endl;
     dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, seconds);
     long ret = dispatch_semaphore_wait(m_semFile, timeout);
     std::cout << "   wait ret " << ret << std::endl;
