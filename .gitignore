@@ -1,6 +1,10 @@
 build/
 dist/
 
+*.so
+*.mov
+*.avi
+
 .DS_Store
 
 .settings/
