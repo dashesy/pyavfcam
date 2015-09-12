@@ -310,7 +310,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
     m_pVideoFileOutput = other.m_pVideoFileOutput;
     m_pCapture = other.m_pCapture;
     if (m_pCapture)
-        [m_pCapture setInstance:&first];
+        [m_pCapture setInstance:this];
 
     // Ownership of other is moved to this
     other.m_pObj = NULL;
