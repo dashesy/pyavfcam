@@ -308,7 +308,7 @@ CppAVFCam::~CppAVFCam()
 }
 
 // Assignment operator
-CppAVFCam & CppAVFCam::operator= (CppAVFCam &other)
+CppAVFCam & CppAVFCam::operator= (const CppAVFCam &other)
 {
     swap(*this, other);
 
