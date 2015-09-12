@@ -32,8 +32,8 @@ cdef class AVFCam(object):
     User should derive this class to get the callbacks, we do not provide any default implementations
     """
 
-    # # reference to the actual object
-    # cdef CppAVFCam _ref
+    # reference to the actual object
+    cdef CppAVFCam _ref
 
     def __init__(self, sinks=None, *args, **kwargs):
         """
@@ -56,6 +56,9 @@ cdef class AVFCam(object):
         # the one and only reference
         self._ref = std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self))
 
+    def __dealloc__(self):
+        del self._ref
+        
     def record(self, video_name, duration=20, blocking=True):
         """record a video
         :param video_name: file path to create (will overwrite if it exists)
