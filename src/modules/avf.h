@@ -40,8 +40,7 @@ public:
     CppAVFCam(CppAVFCam& other);
     virtual ~CppAVFCam();
 
-    CppAVFCam & operator= (const CppAVFCam &other);
-    friend void swap(CppAVFCam& first, CppAVFCam& second); // nothrow
+    CppAVFCam & operator= (CppAVFCam &&other);
 
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
     void record(std::string path, unsigned int duration, bool blocking=false);

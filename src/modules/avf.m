@@ -146,7 +146,7 @@ CppAVFCam::CppAVFCam()
 }
 
 // copy-constructor
-CppAVFCam::CppAVFCam(CppAVFCam& other)
+CppAVFCam::CppAVFCam(const CppAVFCam& other)
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
@@ -163,15 +163,6 @@ CppAVFCam::CppAVFCam(CppAVFCam& other)
     m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:this];
-
-    // Ownership of other is moved to this
-    other.m_pObj = NULL;
-    other.m_pSession = NULL;
-    other.m_pDevice = NULL;
-    other.m_pVideoInput = NULL;
-    other.m_pVideoFileOutput = NULL;
-    other.m_pCapture = NULL;
-
 }
 
 // designated constructor
@@ -307,33 +298,29 @@ CppAVFCam::~CppAVFCam()
     NSLog(@"stop      7");
 }
 
-// Assignment operator
-CppAVFCam & CppAVFCam::operator= (const CppAVFCam &other)
+// Move assignment operator
+CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 {
-    swap(*this, other);
+    std::cout << "   move " << &other << " to " << this << std::endl;
+
+    m_pObj = second.m_pObj;
+    m_pSession = second.m_pSession;
+    m_pDevice = second.m_pDevice;
+    m_pVideoInput = second.m_pVideoInput;
+    m_pVideoFileOutput = second.m_pVideoFileOutput;
+    m_pCapture = second.m_pCapture;
+    if (m_pCapture)
+        [m_pCapture setInstance:&first];
+
+    // Ownership of other is moved to this
+    other.m_pObj = NULL;
+    other.m_pSession = NULL;
+    other.m_pDevice = NULL;
+    other.m_pVideoInput = NULL;
+    other.m_pVideoFileOutput = NULL;
+    other.m_pCapture = NULL;
 
     return *this;
-}
-
-void swap(CppAVFCam& first, CppAVFCam& second)
-{
-    std::cout << "   swap " << &first << " and " << &second << std::endl;
-    // enable ADL (not necessary in our case, but good practice)
-    using std::swap;
-
-    // by swapping the members of two classes,
-    // the two classes are effectively swapped
-    swap(first.m_pObj, second.m_pObj);
-    swap(first.m_pSession, second.m_pSession);
-    swap(first.m_pDevice, second.m_pDevice);
-    swap(first.m_pVideoInput, second.m_pVideoInput);
-    swap(first.m_pVideoFileOutput, second.m_pVideoFileOutput);
-
-    swap(first.m_pCapture, second.m_pCapture);
-    if (first.m_pCapture)
-        [first.m_pCapture setInstance:&first];
-    if (second.m_pCapture)
-        [second.m_pCapture setInstance:&second];
 }
 
 // File output callback to Python
