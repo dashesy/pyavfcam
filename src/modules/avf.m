@@ -64,10 +64,8 @@ public:
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
 {
-    std::cout << "   initWithInstance CppAVFCam at " << pInstance << std::endl;
     self = [super init];
     if(self) {
-        NSLog(@"done");
         m_pInstance = pInstance;
         m_semFile = NULL;
     }
@@ -81,6 +79,7 @@ public:
 
 - (void)signalFileOutput
 {
+    std::cout << "   signal CppAVFCam at " << m_pInstance << std::endl;
     // Remove any possible leftovers
     if (m_semFile)
         dispatch_release(m_semFile);
@@ -219,6 +218,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 // Destructor
 CppAVFCam::~CppAVFCam()
 {
+    std::cout << "   destroying " << this << std::endl;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
@@ -368,6 +368,7 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
         // Set the duration of the video, pretend fps is 600, be a nice sheep
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
 
+        std::cout << "   this is " << this << std::endl;
         // Request for signaling when output done
         if (blocking)
             [m_pCapture signalFileOutput];
