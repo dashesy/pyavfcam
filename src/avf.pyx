@@ -4,7 +4,7 @@ Created on Sept 7, 2015
 Purpose: Access AVFoundation as a Cython extension class
 """
 
-from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf
+from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf, std_make_shared_avf, shared_ptr
 cimport cpython.ref as cpy_ref
 
 # the callback may come from a non-python thread
@@ -33,9 +33,9 @@ cdef class AVFCam(object):
     """
 
     # reference to the actual object
-    cdef CppAVFCam _ref
+    cdef shared_ptr[CppAVFCam] _ref
 
-    def __init__(self, sinks=None, *args, **kwargs):
+    def __cinit__(self, sinks=None, *args, **kwargs):
         """
         :param sinks: list of video sinks
             'file': File output (default)
@@ -54,10 +54,10 @@ cdef class AVFCam(object):
                 sink_callback = True
 
         # the one and only reference
-        self._ref = std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self))
+        self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)))
 
     def __dealloc__(self):
-        del self._ref
+        self._ref.reset()
         
     def record(self, video_name, duration=20, blocking=True):
         """record a video
@@ -67,16 +67,16 @@ cdef class AVFCam(object):
         """
 
         cdef string video_name_str = video_name.encode('UTF-8')
-        self._ref.record(video_name_str, duration, blocking)
+        self._ref.get().record(video_name_str, duration, blocking)
 
     def stop_recording(self):
         """stop current recording
         """
-        self._ref.stop_recording()
+        self._ref.get().stop_recording()
 
     @property
     def shape(self):
         """video shape
         """
-        dim = self._ref.get_dimension()
+        dim = self._ref.get().get_dimension()
         return tuple(dim)

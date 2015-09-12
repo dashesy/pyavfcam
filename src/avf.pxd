@@ -23,4 +23,10 @@ cdef extern from "modules/avf.h":
         vector[unsigned int] get_dimension()
 
 cdef extern from "<utility>" namespace "std":
+    cppclass shared_ptr[T]:
+        T* get()
+        void reset()
+        
     cdef CppAVFCam std_move_avf "std::move" (CppAVFCam) nogil
+    cdef shared_ptr[CppAVFCam] std_make_shared_avf "std::make_shared" [CppAVFCam](CppAVFCam) nogil
+    
