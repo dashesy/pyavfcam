@@ -57,6 +57,7 @@ cdef class AVFCam(object):
         self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)))
 
     def __dealloc__(self):
+        print 'del call'
         self._ref.reset()
         
     def record(self, video_name, duration=20, blocking=True):
