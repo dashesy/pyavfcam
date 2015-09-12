@@ -86,14 +86,12 @@ public:
     m_semFile = dispatch_semaphore_create(0);
 }
 
-- (void)blockFileOutput:(uint64_t)seconds
+- (void)blockFileOutput:(uint64_t)nseconds
 {
     if (!m_semFile)
         return;
-    std::cout << "   wait " << seconds << std::endl;
-    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, seconds);
-    long ret = dispatch_semaphore_wait(m_semFile, timeout);
-    std::cout << "   wait ret " << ret << std::endl;
+    dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, nseconds);
+    dispatch_semaphore_wait(m_semFile, timeout);
 }
 
 -(void)dealloc
@@ -125,7 +123,6 @@ public:
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    std::cout << "   done output " << std::endl;
     if (!m_pInstance)
         return;
 
@@ -371,7 +368,6 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
         // Set the duration of the video, pretend fps is 600, be a nice sheep
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
 
-        std::cout << "   this is " << this << std::endl;
         // Request for signaling when output done
         if (blocking)
             [m_pCapture signalFileOutput];
@@ -381,7 +377,7 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 
         // Block on file output, time out in twice the expected time!
         if (blocking)
-            [m_pCapture blockFileOutput:(uint64_t)(2 * duration * NSEC_PER_SEC)];
+            [m_pCapture blockFileOutput:(uint64_t)((4 + duration) * NSEC_PER_SEC)];
     }
 
     [pool drain];
