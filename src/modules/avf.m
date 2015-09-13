@@ -9,59 +9,8 @@
 #include <stdexcept>
 #include <iostream>
 #include "avf.h"
+#include "camera_frame"
 #include "../avf_api.h"
-
-
-// Wrap the image into something we can send easily and efficiently to Python
-class CameraFrame
-{
-public:
-    CameraFrame(CMSampleBufferRef sampleBuffer) {
-    // Get a bitmap representation of the frame using CoreImage and Cocoa calls
-
-    // Pass an actual reference to a custom Frame class up
-
-//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(source);
-//    CVPixelBufferLockBaseAddress(imageBuffer,0);
-//
-//    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
-//    size_t width = CVPixelBufferGetWidth(imageBuffer);
-//    size_t height = CVPixelBufferGetHeight(imageBuffer);
-//    void *src_buff = CVPixelBufferGetBaseAddress(imageBuffer);
-//
-//    NSData *data = [NSData dataWithBytes:src_buff length:bytesPerRow * height];
-//
-//    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-//        UIImage * img = [[UIImage alloc] initWithData:d];
-    }
-
-    void save(std::string path, std::string uti_type, float quality=1.0) {
-        if (uti_type.length() == 0){
-            // TODO: infere uti_type
-        }
-        // Get the string and expand it to a file URL
-        NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
-        NSURL *url = [NSURL fileURLWithPath:path_str];
-
-//        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-//        //
-//        jpeg = ... is ext jpg
-//        CGImageRef imageRef = ...
-//        CFMutableDictionaryRef mSaveMetaAndOpts = NULL;
-//        CFStringRef uti_type = (CFStringRef)@"public.png";
-//        if (jpeg) {
-//            mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0, &kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
-//            CFDictionarySetValue(mSaveMetaAndOpts, kCGImageDestinationLossyCompressionQuality,
-//                                 [NSNumber numberWithFloat:quality]);
-//            uti_type = (CFStringRef)@"public.jpeg"
-//        }
-//
-//        CGImageDestinationRef dr = CGImageDestinationCreateWithURL((CFURLRef)outURL, uti_type, 1, NULL);
-//        CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
-//        CGImageDestinationFinalize(dr);
-//        [pool drain];
-    }
-};
 
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
@@ -557,7 +506,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
                     frame.save(path, uti_type, quality)
                 if (sem)
                     dispatch_semaphore_signal(sem);
-                    
+
                 [pool drain];
             }
          }];
