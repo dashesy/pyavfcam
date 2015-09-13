@@ -101,6 +101,7 @@ public:
 -(void)dealloc
 {
     // BUG: It seems this is not called because AVFoundation retains a strong reference of this object somewhere !!
+    // std::cout << "dealloc" << std::endl;
     if (m_semFile) {
         dispatch_release(m_semFile);
         m_semFile = NULL;
