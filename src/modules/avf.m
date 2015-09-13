@@ -36,8 +36,8 @@ public:
 };
 
 // A basic shim that just passes things to C++ instance
-@interface AVCaptureDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate,
-                                         AVCaptureFileOutputRecordingDelegate>
+@interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
+                                         AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     CppAVFCam * m_pInstance; // What I am delegated for
     dispatch_semaphore_t m_semFile;  // Semaphore for blocking file video sink
@@ -52,6 +52,10 @@ public:
   fromConnections:(NSArray *)connections
   error:(NSError *)error;
 
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections;
+  
 @end
 
 
@@ -68,7 +72,6 @@ public:
     if(self) {
         m_pInstance = pInstance;
         m_semFile = NULL;
-        std::cout << "cap alloc" << std::endl;
     }
     return self;
 }
@@ -97,10 +100,8 @@ public:
 
 -(void)dealloc
 {
-    std::cout << "   cap dealoc sem " << m_semFile  << " instance " << m_pInstance << std::endl;
-
+    // BUG: It seems this is not called because AVFoundation retains a strong reference of this object somewhere !!
     if (m_semFile) {
-        std::cout << "   boz " << std::endl;
         dispatch_release(m_semFile);
         m_semFile = NULL;
     }
@@ -111,7 +112,6 @@ public:
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   fromConnection:(AVCaptureConnection *)connection
 {
-    std::cout << "baha" << std::endl;
     if (!m_pInstance)
         return;
 
@@ -125,7 +125,7 @@ public:
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    std::cout << "baha2" << std::endl;
+    // BUG: It seems didFinishRecordingToOutputFileAtURL is not called if duration is given  !!
     if (!m_pInstance)
         return;
 
@@ -133,6 +133,13 @@ public:
     if (m_semFile) {
         dispatch_semaphore_signal(m_semFile);
     }
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+{
+    // We can notify
 }
 
 @end
@@ -220,7 +227,6 @@ CppAVFCam::~CppAVFCam()
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
@@ -228,31 +234,27 @@ CppAVFCam::~CppAVFCam()
 
 
     if (m_pVideoInput) {
-        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
         [m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
      }
 
     if (m_pDevice) {
-        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
         [m_pDevice release];
         m_pDevice = NULL;
     }
 
     if (m_pCapture) {
-        std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
+        // std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }
 
     [pool drain];
-    std::cout << "   destroyed " << this << std::endl;
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
@@ -262,6 +264,7 @@ CppAVFCam::~CppAVFCam()
 // Move assignment operator
 CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 {
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     m_pObj = other.m_pObj;
     m_pSession = other.m_pSession;
     m_pDevice = other.m_pDevice;
@@ -278,6 +281,8 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
     other.m_pVideoInput = NULL;
     other.m_pVideoFileOutput = NULL;
     other.m_pCapture = NULL;
+    
+    [pool drain];
 
     return *this;
 }
@@ -285,7 +290,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 // File output callback to Python
 void CppAVFCam::file_output_done(bool error)
 {
-    std::cout << "   file output " << m_pObj << std::endl;
+    // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
 
     if (!m_pObj)
         return;
@@ -367,6 +372,9 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 
         // Start recordign the video and let me know when it is done
         [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+        
+        // BUG: The above increases the ref count but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
+        // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
 
         // Block on file output, time out in twice the expected time!
         if (blocking) {
