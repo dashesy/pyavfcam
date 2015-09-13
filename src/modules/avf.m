@@ -156,12 +156,11 @@ CppAVFCam::CppAVFCam(CppAVFCam&& other)
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
     : CppAVFCam()
 {
-    m_pObj = pObj;
+    if (pObj) {
+        m_pObj = PyWeakref_NewRef(pObj, NULL);
 
-    if (m_pObj) {
         if (import_pyavfcam()) {
-            std::cerr << "[c+]  error in import_avf!\n";
-            Py_XDECREF(m_pObj);
+            std::cerr << "[c+]  error in import_pyavfcam!\n";
             m_pObj = NULL;
         } else {
             Py_XINCREF(m_pObj);
