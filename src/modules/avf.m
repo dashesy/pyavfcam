@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "avf.h"
-#include "camera_frame"
+#include "camera_frame.h"
 #include "../avf_api.h"
 
 // A basic shim that just passes things to C++ instance
