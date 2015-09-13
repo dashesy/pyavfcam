@@ -42,7 +42,7 @@ public:
         // Get the string and expand it to a file URL
         NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
         NSURL *url = [NSURL fileURLWithPath:path_str];
-        
+
 //        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 //        //
 //        jpeg = ... is ext jpg
@@ -549,14 +549,16 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
             sem = dispatch_semaphore_create(0);
         [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
-            // TODO: take care of error handling
-            @autoreleasepool {
+                // TODO: take care of error handling
+                NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                 CameraFrame frame = CameraFrame(imageSampleBuffer);
                 image_output(frame);
                 if (!no_file)
                     frame.save(path, uti_type, quality)
                 if (sem)
                     dispatch_semaphore_signal(sem);
+                    
+                [pool drain];
             }
          }];
          if (sem) {
