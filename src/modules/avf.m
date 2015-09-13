@@ -184,7 +184,7 @@ public:
 CppAVFCam::CppAVFCam()
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
-      m_pVideoInput(NULL), m_pVideoFileOutput(NULL)
+      m_pVideoInput(NULL), m_pVideoFileOutput(NULL), m_pStillImageOutput(NULL)
 {
 }
 
@@ -196,7 +196,7 @@ CppAVFCam::CppAVFCam(CppAVFCam&& other)
 }
 
 // designated constructor
-CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
+CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObject * pObj)
     : CppAVFCam()
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -231,6 +231,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
+            if (sink_image)
+                m_pStillImageOutput = [[AVCaptureStillImageOutput alloc] init];
+            if (m_pStillImageOutput)
+                [m_pSession addOutput:m_pStillImageOutput];
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
@@ -255,6 +259,8 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
         throw std::runtime_error("cannot create multimedia session (perhaps memory error)");
     if (sink_file && !m_pVideoFileOutput)
         throw std::runtime_error("cannot create file video sink");
+    if (sink_image && !m_pStillImageOutput)
+        throw std::runtime_error("cannot create image sink");
 }
 
 // Destructor
@@ -277,6 +283,11 @@ CppAVFCam::~CppAVFCam()
     if (m_pVideoFileOutput) {
         [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
+     }
+
+    if (m_pStillImageOutput) {
+        [m_pStillImageOutput release];
+        m_pStillImageOutput = NULL;
      }
 
     if (m_pDevice) {
@@ -306,6 +317,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
     m_pDevice = other.m_pDevice;
     m_pVideoInput = other.m_pVideoInput;
     m_pVideoFileOutput = other.m_pVideoFileOutput;
+    m_pStillImageOutput = other.m_pStillImageOutput;
     m_pCapture = other.m_pCapture;
     if (m_pCapture)
         [m_pCapture setInstance:this];
@@ -316,6 +328,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
     other.m_pDevice = NULL;
     other.m_pVideoInput = NULL;
     other.m_pVideoFileOutput = NULL;
+    other.m_pStillImageOutput = NULL;
     other.m_pCapture = NULL;
     
     [pool drain];
@@ -445,6 +458,36 @@ void CppAVFCam::stop_recording()
     [pool drain];
 }
 
+// Record to still image sink at given file path
+void CppAVFCam::snap_picture(std::string path, bool blocking)
+{
+    if (!m_pCapture || !m_pSession)
+        throw std::invalid_argument( "session not initialized" );
+    if (!m_pStillImageOutput)
+        throw std::invalid_argument( "image video sink not initialized" );
+
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
+    // Get the string and expand it to a file URL
+    NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+    NSURL *url = [NSURL fileURLWithPath:path_str];
+
+    NSError *file_error = nil;
+    // AVFoundation will not overwrite but we do, remove the file if it exists
+    [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
+
+    // The only accepted file error is if file does not exist yet
+    if (!file_error || file_error.code == NSFileNoSuchFileError) {
+    }
+
+    
+    [pool drain];
+
+    if (file_error)
+        throw std::invalid_argument( "invalid or inaccessable path (error)" );
+}
+
+// Return a list with items that can be passed to a set_format method
 void CppAVFCam::get_device_formats()
 {
     if (!m_pDevice)
@@ -460,6 +503,7 @@ void CppAVFCam::get_device_formats()
     // TODO: return a list with items that can be passed to a set_format method
 }
 
+// Get width and height of the frames in the sink
 std::vector<unsigned int> CppAVFCam::get_dimension()
 {
     std::vector<unsigned int> dim;

@@ -43,6 +43,7 @@ cdef class AVFCam(object):
         """
         cdef bint sink_file = False
         cdef bint sink_callback = False
+        cdef bint sink_image = False
         if sinks is None:
             sink_file = True
         else:
@@ -52,24 +53,35 @@ cdef class AVFCam(object):
                 sink_file = True
             if 'callback' in sinks:
                 sink_callback = True
+            if 'image' in sinks:
+                sink_image = True
 
         # the one and only reference
-        self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)))
+        self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
+                                                               <cpy_ref.PyObject*>self)))
 
     def __dealloc__(self):
         """called when last reference is claimed
         """
         self._ref.reset()
         
-    def record(self, video_name, duration=20, blocking=True):
+    def record(self, name, duration=20, blocking=True):
         """record a video
-        :param video_name: file path to create (will overwrite if it exists)
+        :param name: file path to create (will overwrite if it exists)
         :param duration: duration of video to record (in seconds)
         :param blocking: if should block until recording is done (or error happens)
         """
 
-        cdef string video_name_str = video_name.encode('UTF-8')
+        cdef string video_name_str = name.encode('UTF-8')
         self._ref.get().record(video_name_str, duration, blocking)
+
+    def snap_picture(self, name, blocking=True):
+        """record a video
+        :param name: file path to create (will overwrite if it exists)
+        """
+
+        cdef string video_name_str = name.encode('UTF-8')
+        self._ref.get().record(video_name_str, blocking)
 
     def stop_recording(self):
         """stop current recording

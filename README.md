@@ -5,7 +5,7 @@ Python extension to use OSX AVFoundation to access camera
 Introduction
 ============
 
-pyavfcam is a simple Python extension for AVFoundation to capture video in OSX.
+pyavfcam is a simple Python extension for AVFoundation to capture video (or still image) in OSX.
 
 License
 ============

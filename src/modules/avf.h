@@ -27,6 +27,7 @@ private:
     AVCaptureDevice * m_pDevice;              // Camera device
     AVCaptureDelegate * m_pCapture;           // Capture delegate
     AVCaptureDeviceInput * m_pVideoInput;
+    AVCaptureStillImageOutput * m_pStillImageOutput;
     AVCaptureMovieFileOutput * m_pVideoFileOutput;
 
 public:
@@ -45,6 +46,7 @@ public:
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
     void record(std::string path, unsigned int duration, bool blocking=false);
     void stop_recording();
+    void snap_picture(std::string path, bool blocking=false);
     void get_device_formats();
     std::vector<unsigned int> get_dimension();
 };
