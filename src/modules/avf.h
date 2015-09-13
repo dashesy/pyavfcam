@@ -13,6 +13,7 @@
 @class AVCaptureSession;
 @class AVCaptureDelegate;
 @class AVCaptureDeviceInput;
+@class AVCaptureStillImageOutput;
 @class AVCaptureMovieFileOutput;
 
 class CameraFrame;
