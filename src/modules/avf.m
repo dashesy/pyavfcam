@@ -35,7 +35,14 @@ public:
 //        UIImage * img = [[UIImage alloc] initWithData:d];
     }
 
-    void record(NSURL * outURL, std::string uti_type, float quality=1.0) {
+    void save(std::string path, std::string uti_type, float quality=1.0) {
+        if (uti_type.length() == 0){
+            // TODO: infere uti_type
+        }
+        // Get the string and expand it to a file URL
+        NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+        NSURL *url = [NSURL fileURLWithPath:path_str];
+        
 //        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 //        //
 //        jpeg = ... is ext jpg
@@ -295,7 +302,6 @@ CppAVFCam::~CppAVFCam()
         m_pSession = NULL;
     }
 
-
     if (m_pVideoInput) {
         [m_pVideoInput release];
         m_pVideoInput = NULL;
@@ -391,7 +397,7 @@ void CppAVFCam::video_output(CameraFrame &frame)
 }
 
 // Video frame callback to Python
-void CppAVFCam::image_output(Frame &frame)
+void CppAVFCam::image_output(CameraFrame &frame)
 {
     if (!m_pObj)
         return;
@@ -517,10 +523,6 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
 
         // AVFoundation will not overwrite but we do, remove the file if it exists
         [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
-
-        if (uti_type.length() == 0){
-            // TODO: infere uti_type
-        }
     }
 
     AVCaptureConnection *videoConnection = nil;
@@ -540,21 +542,28 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
     }
     if (videoConnection) {
 
-        // FIXME: Make sure all the internals to the lambda are keps by value, or are weak references
+        // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
+        dispatch_semaphore_t sem = NULL;
+        if (blocking)
+            sem = dispatch_semaphore_create(0);
         [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
             // TODO: take care of error handling
-            CameraFrame frame = CameraFrame(imageSampleBuffer);
-            image_output(frame);
-            if (!no_file)
-                frame.record(url, uti_type, quality)
-            if (blocking) {
-                // TODO: signal
+            @autoreleasepool {
+                CameraFrame frame = CameraFrame(imageSampleBuffer);
+                image_output(frame);
+                if (!no_file)
+                    frame.save(path, uti_type, quality)
+                if (sem)
+                    dispatch_semaphore_signal(sem);
             }
          }];
-         if (blocking) {
-            // TODO: Wait for above handler
+         if (sem) {
+            // This is blocking call so wait at most handful of seconds for the signal
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(10 * NSEC_PER_SEC));
+            dispatch_semaphore_wait(sem, timeout);
+            dispatch_release(sem);
          }
     }
 
