@@ -30,6 +30,10 @@ cdef class AVFCam(object):
     AVFoundation simple camera interface (base class)
 
     User should derive this class to get the callbacks, we do not provide any default implementations
+    These are current callback methods that can be implemented:
+        'file_output_done'
+        'video_output'
+        'image_output'
     """
 
     # reference to the actual object
@@ -66,22 +70,27 @@ cdef class AVFCam(object):
         self._ref.reset()
         
     def record(self, name, duration=20, blocking=True):
-        """record a video
+        """record a video and call file_output_done
         :param name: file path to create (will overwrite if it exists)
         :param duration: duration of video to record (in seconds)
         :param blocking: if should block until recording is done (or error happens)
         """
 
-        cdef string video_name_str = name.encode('UTF-8')
-        self._ref.get().record(video_name_str, duration, blocking)
+        cdef string name_str = name.encode('UTF-8')
+        self._ref.get().record(name_str, duration, blocking)
 
-    def snap_picture(self, name, blocking=True):
-        """record a video
+    def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
+        """record an image and call image_output
         :param name: file path to create (will overwrite if it exists)
+        :param blocking: if should block until image is taken (or error happens)
+        :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
+        :param quality: if compressed format this is the compression quality
         """
 
-        cdef string video_name_str = name.encode('UTF-8')
-        self._ref.get().record(video_name_str, blocking)
+        cdef bint no_file = len(name) == 0
+        cdef string name_str = name.encode('UTF-8')
+        cdef string uti_str = uti_type.encode('UTF-8')
+        self._ref.get().snap_picture(name_str, no_file, blocking, uti_type, quality)
 
     def stop_recording(self):
         """stop current recording

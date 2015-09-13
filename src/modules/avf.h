@@ -15,7 +15,7 @@
 @class AVCaptureDeviceInput;
 @class AVCaptureMovieFileOutput;
 
-class VideoFrame;
+class CameraFrame;
 struct _object;
 typedef _object PyObject;;
 
@@ -32,12 +32,14 @@ private:
 
 public:
     virtual void file_output_done(bool error);
-    virtual void video_output(VideoFrame &frame);
+    virtual void video_output(CameraFrame &frame);
+    virtual void image_output(CameraFrame &frame);
 
 public:
 
     CppAVFCam();
-    CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj=NULL);
+    CppAVFCam(bool sink_file, bool sink_callback, bool sink_image,
+              PyObject * pObj=NULL);
     CppAVFCam(CppAVFCam &&other);
     virtual ~CppAVFCam();
 
@@ -46,7 +48,8 @@ public:
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
     void record(std::string path, unsigned int duration, bool blocking=false);
     void stop_recording();
-    void snap_picture(std::string path, bool blocking=false);
+    void snap_picture(std::string path, bool no_file, bool blocking=false,
+                      std::string uti_type="", float quality=1.0);
     void get_device_formats();
     std::vector<unsigned int> get_dimension();
 };

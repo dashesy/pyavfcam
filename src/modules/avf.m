@@ -13,10 +13,10 @@
 
 
 // Wrap the image into something we can send easily and efficiently to Python
-class VideoFrame
+class CameraFrame
 {
 public:
-    VideoFrame(CMSampleBufferRef sampleBuffer) {
+    CameraFrame(CMSampleBufferRef sampleBuffer) {
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
     // Pass an actual reference to a custom Frame class up
@@ -32,6 +32,27 @@ public:
 //    NSData *data = [NSData dataWithBytes:src_buff length:bytesPerRow * height];
 //
 //    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+//        UIImage * img = [[UIImage alloc] initWithData:d];
+    }
+
+    void record(NSURL * outURL, std::string uti_type, float quality=1.0) {
+//        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+//        //
+//        jpeg = ... is ext jpg
+//        CGImageRef imageRef = ...
+//        CFMutableDictionaryRef mSaveMetaAndOpts = NULL;
+//        CFStringRef uti_type = (CFStringRef)@"public.png";
+//        if (jpeg) {
+//            mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0, &kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
+//            CFDictionarySetValue(mSaveMetaAndOpts, kCGImageDestinationLossyCompressionQuality,
+//                                 [NSNumber numberWithFloat:quality]);
+//            uti_type = (CFStringRef)@"public.jpeg"
+//        }
+//
+//        CGImageDestinationRef dr = CGImageDestinationCreateWithURL((CFURLRef)outURL, uti_type, 1, NULL);
+//        CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
+//        CGImageDestinationFinalize(dr);
+//        [pool drain];
     }
 };
 
@@ -116,7 +137,7 @@ public:
     if (!m_pInstance)
         return;
 
-    VideoFrame frame = VideoFrame(sampleBuffer);
+    CameraFrame frame = CameraFrame(sampleBuffer);
     m_pInstance->video_output(frame);
 
 }
@@ -241,7 +262,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
     //            [video_buffer_output setSampleBufferDelegate:self queue:videoQueue];
     //
     //            video_buffer_output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
-    //            video_buffer_output.alwaysDiscardsLateVideoFrames=YES;
+    //            video_buffer_output.alwaysDiscardsLateCameraFrames=YES;
     //        }
     //        if (video_buffer_output)
     //            [m_pSession addOutput:video_buffer_output];
@@ -360,12 +381,31 @@ void CppAVFCam::file_output_done(bool error)
 }
 
 // Video frame callback to Python
-void CppAVFCam::video_output(VideoFrame &frame)
+void CppAVFCam::video_output(CameraFrame &frame)
 {
     if (!m_pObj)
         return;
 
     // TODO: implement callback using numpy array
+
+}
+
+// Video frame callback to Python
+void CppAVFCam::image_output(Frame &frame)
+{
+    if (!m_pObj)
+        return;
+//             CFDictionaryRef exifAttachments = CMGetAttachment( imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
+//             if (exifAttachments)
+//             {
+//                // Do something with the attachments.
+//                NSLog(@"attachements: %@", exifAttachments);
+//             } else {
+//                NSLog(@"no attachments");
+//                 }
+//            NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
+//            UIImage *image = [[UIImage alloc] initWithData:imageData];
+//
 
 }
 
@@ -438,7 +478,7 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
     [pool drain];
 
     if (file_error)
-        throw std::invalid_argument( "invalid or inaccessable path (error)" );
+        throw std::invalid_argument( "invalid or inaccessable file path" );
 }
 
 // Stop recording to file if recording in progress
@@ -459,7 +499,8 @@ void CppAVFCam::stop_recording()
 }
 
 // Record to still image sink at given file path
-void CppAVFCam::snap_picture(std::string path, bool blocking)
+void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
+                             std::string uti_type, float quality)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
@@ -468,24 +509,62 @@ void CppAVFCam::snap_picture(std::string path, bool blocking)
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    // Get the string and expand it to a file URL
-    NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
-    NSURL *url = [NSURL fileURLWithPath:path_str];
-
     NSError *file_error = nil;
-    // AVFoundation will not overwrite but we do, remove the file if it exists
-    [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
+    if (! no_file) {
+        // Get the string and expand it to a file URL
+        NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+        NSURL *url = [NSURL fileURLWithPath:path_str];
 
+        // AVFoundation will not overwrite but we do, remove the file if it exists
+        [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
+
+        if (uti_type.length() == 0){
+            // TODO: infere uti_type
+        }
+    }
+
+    AVCaptureConnection *videoConnection = nil;
     // The only accepted file error is if file does not exist yet
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
+        file_error = nil;
+        for (AVCaptureConnection *connection in stillImageOutput.connections) {
+            for (AVCaptureInputPort *port in [connection inputPorts]) {
+                if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
+                    videoConnection = connection;
+                    break;
+                }
+            }
+            if (videoConnection)
+                break;
+        }
+    }
+    if (videoConnection) {
 
+        // FIXME: Make sure all the internals to the lambda are keps by value, or are weak references
+
+        [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
+                             completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
+            // TODO: take care of error handling
+            CameraFrame frame = CameraFrame(imageSampleBuffer);
+            image_output(frame);
+            if (!no_file)
+                frame.record(url, uti_type, quality)
+            if (blocking) {
+                // TODO: signal
+            }
+         }];
+         if (blocking) {
+            // TODO: Wait for above handler
+         }
     }
 
 
     [pool drain];
 
     if (file_error)
-        throw std::invalid_argument( "invalid or inaccessable path (error)" );
+        throw std::invalid_argument( "invalid or inaccessable file path" );
+    if (!videoConnection)
+        throw std::runtime_error( "connection error" );
 }
 
 // Return a list with items that can be passed to a set_format method
