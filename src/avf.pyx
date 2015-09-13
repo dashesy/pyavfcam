@@ -90,7 +90,7 @@ cdef class AVFCam(object):
         cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
-        self._ref.get().snap_picture(name_str, no_file, blocking, uti_type, quality)
+        self._ref.get().snap_picture(name_str, no_file, blocking, uti_str, quality)
 
     def stop_recording(self):
         """stop current recording
