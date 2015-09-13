@@ -68,6 +68,7 @@ public:
     if(self) {
         m_pInstance = pInstance;
         m_semFile = NULL;
+        std::cout << "cap alloc" << std::endl;
     }
     return self;
 }
@@ -110,6 +111,7 @@ public:
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   fromConnection:(AVCaptureConnection *)connection
 {
+    std::cout << "baha" << std::endl;
     if (!m_pInstance)
         return;
 
@@ -123,6 +125,7 @@ public:
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
+    std::cout << "baha2" << std::endl;
     if (!m_pInstance)
         return;
 
@@ -147,20 +150,20 @@ CppAVFCam::CppAVFCam(CppAVFCam&& other)
     : CppAVFCam()
 {
     *this = std::move(other);
-//
-//    if (m_pCapture)
-//        [m_pCapture setInstance:this];
 }
 
 // designated constructor
 CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
     : CppAVFCam()
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
     if (pObj) {
         m_pObj = PyWeakref_NewRef(pObj, NULL);
 
         if (import_pyavfcam()) {
             std::cerr << "[c+]  error in import_pyavfcam!\n";
+            Py_XDECREF(m_pObj);
             m_pObj = NULL;
         } else {
             Py_XINCREF(m_pObj);
@@ -169,8 +172,6 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 
     // Connect this class with NSObject
     m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
-
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     //AVCaptureVideoDataOutput *video_buffer_output = NULL
 
@@ -219,17 +220,7 @@ CppAVFCam::~CppAVFCam()
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
-        //std::cout << "   destroying " << this << std::endl;
-        [m_pSession beginConfiguration];
-        for(AVCaptureInput *input1 in m_pSession.inputs) {
-            [m_pSession removeInput:input1];
-        }
-
-        for(AVCaptureOutput *output1 in m_pSession.outputs) {
-            [m_pSession removeOutput:output1];
-        }
-        [m_pSession commitConfiguration];
-
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession stopRunning];
         [m_pSession release];
         m_pSession = NULL;
@@ -237,37 +228,35 @@ CppAVFCam::~CppAVFCam()
 
 
     if (m_pVideoInput) {
-        std::cout << "   destroying 2 " << this << std::endl;
-        //[m_pVideoInput release];
+        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
+        [m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        std::cout << "   destroying 3 " << this << std::endl;
-        //[m_pVideoFileOutput release];
+        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
+        [m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
      }
 
+    if (m_pDevice) {
+        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
+        [m_pDevice release];
+        m_pDevice = NULL;
+    }
+
     if (m_pCapture) {
-        std::cout << "   destroying 4 " << this << std::endl;
+        std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }
 
-    // Deallocate device at the end
-    if (m_pDevice) {
-        std::cout << "   destroying 5 " << this << std::endl;
-        //[m_pDevice release];
-        m_pDevice = NULL;
-    }
-
     [pool drain];
-    std::cout << "   destroying 6 " << this << std::endl;
+    std::cout << "   destroyed " << this << std::endl;
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
-    std::cout << "   destroying 7 " << this << std::endl;
 }
 
 // Move assignment operator
@@ -380,8 +369,10 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
         [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
 
         // Block on file output, time out in twice the expected time!
-        if (blocking)
+        if (blocking) {
             [m_pCapture blockFileOutput:(uint64_t)((4 + duration) * NSEC_PER_SEC)];
+            [m_pVideoFileOutput stopRecording];
+        }
     }
 
     [pool drain];
