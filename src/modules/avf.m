@@ -408,7 +408,7 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 
         ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:m_pCapture];
         // Start recordign the video and let me know when it is done
-        [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:m_pCapture];
+        [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:proxy];
         [proxy release];
 
         // BUG: The above increases the ref count but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
