@@ -22,6 +22,7 @@ for arg in sys.argv:
     
 # Open the default video source
 video = pyavfcam.AVFCam()
-video.record('test.mov', duration=duration)
+if duration:
+    video.record('test.mov', duration=duration)
 
-print "Saved test.avi (Size: " + str(video.shape[0]) + " x " + str(video.shape[1]) + ")"
+    print "Saved test.avi (Size: " + str(video.shape[0]) + " x " + str(video.shape[1]) + ")"

@@ -99,7 +99,7 @@ public:
     std::cout << "   cap dealoc sem " << m_semFile  << " instance " << m_pInstance << std::endl;
 
     if (m_semFile) {
-        NSLog(@"had sem");
+        std::cout << "   boz " << std::endl;
         dispatch_release(m_semFile);
         m_semFile = NULL;
     }
@@ -216,11 +216,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, PyObject * pObj)
 // Destructor
 CppAVFCam::~CppAVFCam()
 {
-    std::cout << "   destructor " << this << std::endl;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pSession) {
-        std::cout << "   destroying " << this << std::endl;
+        //std::cout << "   destroying " << this << std::endl;
         [m_pSession beginConfiguration];
         for(AVCaptureInput *input1 in m_pSession.inputs) {
             [m_pSession removeInput:input1];
@@ -238,31 +237,37 @@ CppAVFCam::~CppAVFCam()
 
 
     if (m_pVideoInput) {
-        [m_pVideoInput release];
+        std::cout << "   destroying 2 " << this << std::endl;
+        //[m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        [m_pVideoFileOutput release];
+        std::cout << "   destroying 3 " << this << std::endl;
+        //[m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
-    }
+     }
 
     if (m_pCapture) {
+        std::cout << "   destroying 4 " << this << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }
 
     // Deallocate device at the end
     if (m_pDevice) {
-        [m_pDevice release];
+        std::cout << "   destroying 5 " << this << std::endl;
+        //[m_pDevice release];
         m_pDevice = NULL;
     }
 
     [pool drain];
+    std::cout << "   destroying 6 " << this << std::endl;
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
+    std::cout << "   destroying 7 " << this << std::endl;
 }
 
 // Move assignment operator

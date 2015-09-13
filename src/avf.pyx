@@ -35,7 +35,7 @@ cdef class AVFCam(object):
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
 
-    def __cinit__(self, sinks=None, *args, **kwargs):
+    def __init__(self, sinks=None, *args, **kwargs):
         """
         :param sinks: list of video sinks
             'file': File output (default)
@@ -57,7 +57,8 @@ cdef class AVFCam(object):
         self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, <cpy_ref.PyObject*>self)))
 
     def __dealloc__(self):
-        print 'del call'
+        """called when last reference is claimed
+        """
         self._ref.reset()
         
     def record(self, video_name, duration=20, blocking=True):
