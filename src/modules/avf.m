@@ -419,7 +419,7 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
         if (blocking)
             [m_pCapture signalFileOutput];
 
-        // BUG: The above increases the ref count but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
+        // BUG: ref count of m_pCapture is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
         //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
         ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:m_pCapture];
         // Start recordign the video and let me know when it is done
@@ -478,9 +478,10 @@ void CppAVFCam::snap_picture(std::string path, bool blocking)
 
     // The only accepted file error is if file does not exist yet
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
+
     }
 
-    
+
     [pool drain];
 
     if (file_error)
