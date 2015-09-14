@@ -10,4 +10,4 @@
 bool str_ends_with(std::string const &full_string, std::string const &ending);
 std::string file_extension(std::string file);
 std::string file_basename(std::string file);
-std::string str_tolower(std::string data);
+std::string str_tolower(std::string const & data);
