@@ -31,11 +31,11 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 //        UIImage * img = [[UIImage alloc] initWithData:d];
 }
 
-void CameraFrame::save(std::string path, std::string uti_type, float quality)
+void CameraFrame::save(std::string path, std::string uti_str, float quality)
 {
         CFStringRef uti_type = (CFStringRef)@"public.png";
-        if (uti_type.length() == 0) {
-            std::string ext = str_tolower(file_extension(path))
+        if (uti_str.length() == 0) {
+            std::string ext = str_tolower(file_extension(path));
             if (ext == ".jpeg" || ext == ".jpg")
                 uti_type = (CFStringRef)@"public.jpeg";
             // TODO: Can infere more uti mime

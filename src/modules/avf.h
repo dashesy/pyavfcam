@@ -50,7 +50,7 @@ public:
     void record(std::string path, unsigned int duration, bool blocking=false);
     void stop_recording();
     void snap_picture(std::string path, bool no_file, bool blocking=false,
-                      std::string uti_type="", float quality=1.0);
+                      std::string uti_str="", float quality=1.0);
     void get_device_formats();
     std::vector<unsigned int> get_dimension();
 };
