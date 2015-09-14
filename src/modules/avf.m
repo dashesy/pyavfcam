@@ -93,7 +93,7 @@
     if (!m_pInstance)
         return;
 
-    CameraFrame frame = CameraFrame(sampleBuffer);
+    CameraFrame frame(sampleBuffer);
     m_pInstance->video_output(frame);
 
 }
