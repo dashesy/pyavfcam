@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "camera_frame.h"
+#include "utils.h"
 
 
 CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
@@ -32,8 +33,12 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 
 void CameraFrame::save(std::string path, std::string uti_type, float quality)
 {
-        if (uti_type.length() == 0){
-            // TODO: infere uti_type
+        CFStringRef uti_type = (CFStringRef)@"public.png";
+        if (uti_type.length() == 0) {
+            std::string ext = str_tolower(file_extension(path))
+            if (ext == ".jpeg" || ext == ".jpg")
+                uti_type = (CFStringRef)@"public.jpeg";
+            // TODO: Can infere more uti mime
         }
         // Get the string and expand it to a file URL
         NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
