@@ -16,7 +16,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     : m_bytesPerRow(0), m_width(0), m_height(0),
       m_exif(NULL)
 {
-    NSLog(@" sampleBuffer %@", sampleBuffer);
+    //NSLog(@" sampleBuffer %@", sampleBuffer);
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
     // Pass an actual reference to a custom Frame class up
@@ -33,7 +33,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 
     // Take the bitmap
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    NSLog(@" imageBuffer %@", imageBuffer);
+    // NSLog(@" imageBuffer %@", imageBuffer);
     CVPixelBufferLockBaseAddress(imageBuffer,0);
 
     m_bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
