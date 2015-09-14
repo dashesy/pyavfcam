@@ -68,7 +68,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
                 uti_type = (CFStringRef)@"public.jpeg";
                 found_uti = true;
             } else if (ext == ".png") {
-                found_uti = true
+                found_uti = true;
             }
         }
         // Get the string and expand it to a file URL
