@@ -13,7 +13,7 @@
 
 // Input is a frame reference, make a solid object from it
 CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
-    : m_bytes_per_row(0), m_width(0), m_height(0), m_pImageData(NULL),
+    : m_bytesPerRow(0), m_width(0), m_height(0),
       m_exif(NULL)
 {
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
@@ -21,7 +21,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     // Pass an actual reference to a custom Frame class up
 
     // Take exif to re-attach if need to save as image
-    CFDictionaryRef exifAttachments = CMGetAttachment(imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
+    CFDictionaryRef exifAttachments = CMGetAttachment(sampleBuffer, kCGImagePropertyExifDictionary, NULL);
     if (exifAttachments) {
         NSLog(@"attachements: %@", exifAttachments);
         // Replace the previous copy (if any)
@@ -64,11 +64,12 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         if (uti_str.length() == 0) {
             found_uti = false;
             std::string ext = str_tolower(file_extension(path));
-            if (ext == ".jpeg" || ext == ".jpg")
+            if (ext == ".jpeg" || ext == ".jpg") {
                 uti_type = (CFStringRef)@"public.jpeg";
                 found_uti = true;
-            else if (ext == ".png") {
+            } else if (ext == ".png") {
                 found_uti = true
+            }
         }
         // Get the string and expand it to a file URL
         NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
@@ -96,7 +97,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
                 CFMutableDictionaryRef mSaveMetaAndOpts = NULL;
                 if (m_exif)
                     mSaveMetaAndOpts = CFDictionaryCreateMutableCopy(nil, 0, m_exif);
-                else:
+                else
                     mSaveMetaAndOpts = CFDictionaryCreateMutable(nil, 0, &kCFTypeDictionaryKeyCallBacks,  &kCFTypeDictionaryValueCallBacks);
 
                 // Set the image quality
