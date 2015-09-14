@@ -40,5 +40,5 @@ std::string str_tolower(std::string const & data)
     std::string lower = data;
     std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
-    return lower
+    return lower;
 }
