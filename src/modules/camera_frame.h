@@ -9,7 +9,7 @@
 
 
 #import <Foundation/Foundation.h>
-#import <CoreMedia/CoreMedia.h>;
+#import <CoreMedia/CoreMedia.h>
 
 // Wrap the image into something we can send easily and efficiently to Python
 class CameraFrame

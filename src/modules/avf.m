@@ -532,12 +532,12 @@ void CppAVFCam::get_device_formats()
     if (!m_pDevice)
         throw std::invalid_argument( "webcam video source not initialized" );
 
-    for(AVCaptureDeviceFormat *vFormat in [m_pDevice formats] )
-    {
-        CMFormatDescriptionRef description= vFormat.formatDescription;
-        float max_fps = ((AVFrameRateRange*)[vFormat.videoSupportedFrameRateRanges objectAtIndex:0]).maxFrameRate;
-        int format = CMFormatDescriptionGetMediaSubType(description);
-    }
+//    for(AVCaptureDeviceFormat *vFormat in [m_pDevice formats] )
+//    {
+//        CMFormatDescriptionRef description= vFormat.formatDescription;
+//        float max_fps = ((AVFrameRateRange*)[vFormat.videoSupportedFrameRateRanges objectAtIndex:0]).maxFrameRate;
+//        int format = CMFormatDescriptionGetMediaSubType(description);
+//    }
 
     // TODO: return a list with items that can be passed to a set_format method
 }
