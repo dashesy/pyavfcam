@@ -71,6 +71,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
                 found_uti = true;
             }
         }
+        
         // Get the string and expand it to a file URL
         NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
 
@@ -88,10 +89,14 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         CGContextRef newContext = CGBitmapContextCreate((CGImageRef) m_img.get(),
                                                         m_width, m_height, 8, m_bytesPerRow, colorSpace,
                                                         kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
-        if (newContext) {
+        if (!newContext) {
+            std::cerr << "[c+]  error in CGBitmapContextCreate!\n";
+        } else {
             CGImageRef newImageRef = CGBitmapContextCreateImage(newContext); // It does a COW
 
-            if (newImageRef) {
+            if (!newImageRef) {
+                std::cerr << "[c+]  error in CGBitmapContextCreateImage!\n";
+            } else {
                 CGColorSpaceRelease(colorSpace);
 
                 CFMutableDictionaryRef mSaveMetaAndOpts = NULL;

@@ -341,8 +341,7 @@ void CppAVFCam::video_output(CameraFrame &frame)
     if (!m_pObj)
         return;
 
-    // TODO: implement callback using numpy array
-
+    // TODO: implement callback using memory buffer
 }
 
 // Video frame callback to Python
@@ -350,18 +349,8 @@ void CppAVFCam::image_output(CameraFrame &frame)
 {
     if (!m_pObj)
         return;
-//             CFDictionaryRef exifAttachments = CMGetAttachment( imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
-//             if (exifAttachments)
-//             {
-//                // Do something with the attachments.
-//                NSLog(@"attachements: %@", exifAttachments);
-//             } else {
-//                NSLog(@"no attachments");
-//                 }
-//            NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
-//            UIImage *image = [[UIImage alloc] initWithData:imageData];
-//
 
+    // TODO: implement callback using memory buffer
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
