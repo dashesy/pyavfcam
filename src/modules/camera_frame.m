@@ -93,7 +93,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         CGContextRef newContext = CGBitmapContextCreate((CGImageRef) m_img.get(),
                                                         m_width, m_height, 8, m_bytesPerRow, colorSpace,
                                                         kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
-        std::cout << "[c+]  img " << m_img.get() << " this " << this << std::endl;
+
         if (!newContext) {
             std::cerr << "[c+]  error in CGBitmapContextCreate!\n";
         } else {
