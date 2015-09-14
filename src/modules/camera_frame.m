@@ -11,11 +11,20 @@
 #include "utils.h"
 
 
+// Input is a frame reference, make a solid object from it
 CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 {
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
     // Pass an actual reference to a custom Frame class up
+
+//        // Take this to re-attach if need to save
+//        CFDictionaryRef exifAttachments = CMGetAttachment(imageSampleBuffer, kCGImagePropertyExifDictionary, NULL);
+//        if (exifAttachments) {
+//            NSLog(@"attachements: %@", exifAttachments);
+//        } else {
+//            NSLog(@"no attachments");
+//        }
 
 //    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(source);
 //    CVPixelBufferLockBaseAddress(imageBuffer,0);
@@ -33,6 +42,8 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 
 void CameraFrame::save(std::string path, std::string uti_str, float quality)
 {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
         CFStringRef uti_type = (CFStringRef)@"public.png";
         if (uti_str.length() == 0) {
             std::string ext = str_tolower(file_extension(path));
@@ -44,8 +55,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
         NSURL *url = [NSURL fileURLWithPath:path_str];
 
-//        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-//        //
+
 //        jpeg = ... is ext jpg
 //        CGImageRef imageRef = ...
 //        CFMutableDictionaryRef mSaveMetaAndOpts = NULL;
@@ -60,5 +70,5 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
 //        CGImageDestinationRef dr = CGImageDestinationCreateWithURL((CFURLRef)outURL, uti_type, 1, NULL);
 //        CGImageDestinationAddImage(dr, imageRef, mSaveMetaAndOpts);
 //        CGImageDestinationFinalize(dr);
-//        [pool drain];
+        [pool drain];
 }
