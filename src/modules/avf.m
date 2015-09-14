@@ -487,6 +487,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
             sem = dispatch_semaphore_create(0);
         [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
+                
                 // TODO: take care of error handling
                 NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                 CameraFrame frame(imageSampleBuffer);

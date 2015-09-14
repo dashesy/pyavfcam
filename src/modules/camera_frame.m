@@ -16,6 +16,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     : m_bytesPerRow(0), m_width(0), m_height(0),
       m_exif(NULL)
 {
+    NSLog(@" sampleBuffer %@", sampleBuffer);
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
     // Pass an actual reference to a custom Frame class up
@@ -32,6 +33,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 
     // Take the bitmap
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    NSLog(@" imageBuffer %@", imageBuffer);
     CVPixelBufferLockBaseAddress(imageBuffer,0);
 
     m_bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
@@ -43,6 +45,8 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     m_img = std::unique_ptr<char[]>(dst_buf);
 
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+    
+    std::cout << " size " <<  m_bytesPerRow << " " << m_height << " x " << m_width << std::endl;
 }
 
 // Destructor
@@ -89,6 +93,7 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         CGContextRef newContext = CGBitmapContextCreate((CGImageRef) m_img.get(),
                                                         m_width, m_height, 8, m_bytesPerRow, colorSpace,
                                                         kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+        std::cout << "[c+]  img " << m_img.get() << " this " << this << std::endl;
         if (!newContext) {
             std::cerr << "[c+]  error in CGBitmapContextCreate!\n";
         } else {
