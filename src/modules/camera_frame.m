@@ -21,7 +21,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     // Pass an actual reference to a custom Frame class up
 
     // Take exif to re-attach if need to save as image
-    CFDictionaryRef exifAttachments = CMGetAttachment(sampleBuffer, kCGImagePropertyExifDictionary, NULL);
+    CFDictionaryRef exifAttachments = (CFDictionaryRef)CMGetAttachment(sampleBuffer, kCGImagePropertyExifDictionary, NULL);
     if (exifAttachments) {
         NSLog(@"attachements: %@", exifAttachments);
         // Replace the previous copy (if any)
