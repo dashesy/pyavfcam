@@ -219,7 +219,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
                 NSNumber* value = [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA];
                 NSDictionary* outputSettings = [NSDictionary dictionaryWithObject:value forKey:key];
 
-                [newStillImageOutput setOutputSettings:outputSettings];
+                [m_pStillImageOutput setOutputSettings:outputSettings];
             }
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
