@@ -500,7 +500,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
                 // TODO: take care of error handling
                 NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                CameraFrame frame = CameraFrame(imageSampleBuffer);
+                CameraFrame frame(imageSampleBuffer);
                 image_output(frame);
                 if (!no_file)
                     frame.save(path, uti_str, quality);
