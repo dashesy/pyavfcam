@@ -208,17 +208,19 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-            if (sink_image) {
+            if (sink_image)
                 m_pStillImageOutput = [[AVCaptureStillImageOutput alloc] init];
+
+            if (m_pStillImageOutput) {
+                [m_pSession addOutput:m_pStillImageOutput];
                 // TODO: option to set other output formats
                 // If outputSettings is not set no iamge is returned
-                m_pStillImageOutput.outputSettings = @{
-                    (__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
-		        };
-            }
+                NSString* key = (NSString*)kCVPixelBufferPixelFormatTypeKey;
+                NSNumber* value = [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA];
+                NSDictionary* outputSettings = [NSDictionary dictionaryWithObject:value forKey:key];
 
-            if (m_pStillImageOutput)
-                [m_pSession addOutput:m_pStillImageOutput];
+                [newStillImageOutput setOutputSettings:outputSettings];
+            }
     //        if (sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
