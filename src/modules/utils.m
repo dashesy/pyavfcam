@@ -35,8 +35,10 @@ std::string file_basename(std::string file)
     return file.substr(0, found);
 }
 
-std::string str_tolower(std::string data)
+std::string str_tolower(std::string const & data)
 {
-    std::string str = data;
-    return std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    std::string lower = data;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+    return lower
 }
