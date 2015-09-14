@@ -16,15 +16,12 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     : m_bytesPerRow(0), m_width(0), m_height(0),
       m_exif(NULL)
 {
-    //NSLog(@" sampleBuffer %@", sampleBuffer);
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
-
-    // Pass an actual reference to a custom Frame class up
 
     // Take exif to re-attach if need to save as image
     CFDictionaryRef exifAttachments = (CFDictionaryRef)CMGetAttachment(sampleBuffer, kCGImagePropertyExifDictionary, NULL);
     if (exifAttachments) {
-        NSLog(@"attachements: %@", exifAttachments);
+        // NSLog(@"attachements: %@", exifAttachments);
         // Replace the previous copy (if any)
         if (m_exif)
             CFRelease(m_exif);
@@ -33,7 +30,6 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 
     // Take the bitmap
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    // NSLog(@" imageBuffer %@", imageBuffer);
     CVPixelBufferLockBaseAddress(imageBuffer,0);
 
     m_bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
@@ -45,8 +41,6 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
     m_img = std::unique_ptr<char[]>(dst_buf);
 
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-    
-    std::cout << " size " <<  m_bytesPerRow << " " << m_height << " x " << m_width << std::endl;
 }
 
 // Destructor
