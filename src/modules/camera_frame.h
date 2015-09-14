@@ -8,10 +8,7 @@
 //
 
 
-struct opaqueCFMutableDictionar;
-typedef struct opaqueCFMutableDictionar * CFMutableDictionaryRef;
-struct opaqueCMSampleBuffer;
-typedef struct opaqueCMSampleBuffer *CMSampleBufferRef;
+#import <Foundation/Foundation.h>
 
 // Wrap the image into something we can send easily and efficiently to Python
 class CameraFrame
