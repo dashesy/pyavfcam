@@ -30,7 +30,7 @@ CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
 //        UIImage * img = [[UIImage alloc] initWithData:d];
 }
 
-void CameraFrame::save(std::string path, std::string uti_type, float quality=1.0)
+void CameraFrame::save(std::string path, std::string uti_type, float quality)
 {
         if (uti_type.length() == 0){
             // TODO: infere uti_type

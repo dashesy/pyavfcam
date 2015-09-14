@@ -18,7 +18,7 @@
 
 class CameraFrame;
 struct _object;
-typedef _object PyObject;;
+typedef _object PyObject;
 
 class CppAVFCam
 {
@@ -28,8 +28,8 @@ private:
     AVCaptureDevice * m_pDevice;              // Camera device
     AVCaptureDelegate * m_pCapture;           // Capture delegate
     AVCaptureDeviceInput * m_pVideoInput;
-    AVCaptureStillImageOutput * m_pStillImageOutput;
     AVCaptureMovieFileOutput * m_pVideoFileOutput;
+    AVCaptureStillImageOutput * m_pStillImageOutput;
 
 public:
     virtual void file_output_done(bool error);

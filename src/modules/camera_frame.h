@@ -7,7 +7,8 @@
 // Keep the resemblence of a pure C++ header as much as possible
 //
 
-@class CMSampleBufferRef;
+struct opaqueCMSampleBuffer;
+typedef struct opaqueCMSampleBuffer *CMSampleBufferRef;
 
 // Wrap the image into something we can send easily and efficiently to Python
 class CameraFrame

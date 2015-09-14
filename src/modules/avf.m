@@ -478,7 +478,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
     // The only accepted file error is if file does not exist yet
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
         file_error = nil;
-        for (AVCaptureConnection *connection in stillImageOutput.connections) {
+        for (AVCaptureConnection *connection in m_pStillImageOutput.connections) {
             for (AVCaptureInputPort *port in [connection inputPorts]) {
                 if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
                     videoConnection = connection;
@@ -503,19 +503,18 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
                 CameraFrame frame = CameraFrame(imageSampleBuffer);
                 image_output(frame);
                 if (!no_file)
-                    frame.save(path, uti_type, quality)
+                    frame.save(path, uti_type, quality);
                 if (sem)
                     dispatch_semaphore_signal(sem);
 
                 [pool drain];
-            }
-         }];
-         if (sem) {
+        }];
+        if (sem) {
             // This is blocking call so wait at most handful of seconds for the signal
             dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(10 * NSEC_PER_SEC));
             dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
-         }
+        }
     }
 
 
