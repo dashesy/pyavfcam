@@ -4,6 +4,9 @@ dist/
 *.so
 *.mov
 *.avi
+*.png
+*.jpg
+*.jpeg
 
 .DS_Store
 
