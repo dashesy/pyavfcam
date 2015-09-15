@@ -392,9 +392,9 @@ void CppAVFCam::record(std::string path, float duration, bool blocking)
     if (duration < 1)
         duration = 1;
 
-    bool no_duration = (duration == std::numeric_limits<float>::infinity());
+    bool no_duration = (duration == std::numeric_limits<float>::infinity() || std::isnan(duration));
     if (no_duration && blocking) {
-        std::cout << "blocking recording for-ever turned to non-blocking!" << std::endl;
+        std::cout << "blocking recording without duration turned into non-blocking!" << std::endl;
         blocking = false;
     }
 

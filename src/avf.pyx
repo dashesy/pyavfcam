@@ -74,7 +74,7 @@ cdef class AVFCam(object):
     def record(self, name, duration=20, blocking=True):
         """record a video and call file_output_done
         :param name: file path to create (will overwrite if it exists)
-        :param duration: duration of video to record (in seconds), can be inf
+        :param duration: duration of video to record (in seconds), can be inf/nan to record with no duration
         :param blocking: if should block until recording is done (or error happens)
         """
 
