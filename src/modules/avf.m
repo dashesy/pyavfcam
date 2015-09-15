@@ -163,7 +163,8 @@
 CppAVFCam::CppAVFCam()
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
-      m_pVideoInput(NULL), m_pVideoFileOutput(NULL), m_pStillImageOutput(NULL)
+      m_pVideoInput(NULL), m_pVideoFileOutput(NULL), m_pStillImageOutput(NULL),
+      m_videoFrameCount(0), m_imageFrameCount(0)
 {
 }
 
@@ -349,6 +350,7 @@ void CppAVFCam::file_output_done(bool error)
 // Video frame callback to Python
 void CppAVFCam::video_output(CameraFrame &frame)
 {
+    frame.m_frameCount = m_videoFrameCount++;
     if (!m_pObj)
         return;
 
@@ -358,6 +360,7 @@ void CppAVFCam::video_output(CameraFrame &frame)
 // Video frame callback to Python
 void CppAVFCam::image_output(CameraFrame &frame)
 {
+    frame.m_frameCount = m_imageFrameCount++;
     if (!m_pObj)
         return;
 
@@ -510,9 +513,9 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
                 // TODO: take care of error handling
                 NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                 CameraFrame frame(imageSampleBuffer);
-                image_output(frame);
                 if (!no_file)
                     frame.save(path, uti_str, quality);
+                image_output(frame);
                 if (sem)
                     dispatch_semaphore_signal(sem);
 

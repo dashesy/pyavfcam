@@ -31,6 +31,9 @@ private:
     AVCaptureMovieFileOutput * m_pVideoFileOutput;
     AVCaptureStillImageOutput * m_pStillImageOutput;
 
+private:
+    unsigned int m_videoFrameCount, m_imageFrameCount;
+
 public:
     virtual void file_output_done(bool error);
     virtual void video_output(CameraFrame &frame);

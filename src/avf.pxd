@@ -12,6 +12,15 @@ cdef extern from "Python.h":
 	# noinspection PyPep8Naming
     void PyEval_InitThreads()
 
+cdef extern from "modules/camera_frame.h":
+
+    # noinspection PyPep8Naming
+    cdef cppclass CameraFrame:
+        unsigned int m_width, m_height
+        CameraFrame()
+        void save(string path, string uti_type, float quality) except +
+        vector[unsigned int] get_dimension()
+
 cdef extern from "modules/avf.h":
 
     # noinspection PyPep8Naming

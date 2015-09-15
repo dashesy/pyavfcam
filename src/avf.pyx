@@ -2,6 +2,8 @@
 Created on Sept 7, 2015
 @author: dashesy
 Purpose: Access camera through AVFoundation as a Cython extension class
+
+To keep dependencies to minimum, do not depend on numpy, instead return memoryviews
 """
 
 from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf, std_make_shared_avf, shared_ptr
@@ -26,6 +28,60 @@ cdef public api void cy_call_func(object self, bint *overridden, char* method, o
         overridden[0] = 1
         func(*args, **kwargs)
 
+cdef class Frame(object):
+    """CameraFrame wrapper with memoryview interface for the image
+    """
+    # reference to the actual object
+    cdef shared_ptr[CameraFrame] _ref
+
+    def __dealloc__(self):
+        """called when last reference is claimed
+        """
+        self._ref.reset()
+
+    def save(self, name, uti_type='', quality=1.0):
+        """save an image
+        :param name: file path to create (will overwrite if it exists)
+        :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
+        :param quality: if compressed format this is the compression quality
+        """
+
+        cdef string name_str = name.encode('UTF-8')
+        cdef string uti_str = uti_type.encode('UTF-8')
+        self._ref.get().save(name_str, uti_str, quality)
+
+    @property
+    def image(self):
+        """memoryview to the image buffer
+        """
+        if len(self.shape) == 0:
+            return None
+
+    @property
+    def shape(self):
+        """image shape (height, width)
+        """
+        dim = self._ref.get().get_dimension()
+        return tuple(dim)
+
+    @property
+    def width(self):
+        """image width
+        """
+        return self._ref.get().m_width
+
+    @property
+    def height(self):
+        """image height
+        """
+        return self._ref.get().m_height
+
+    @property
+    def frame_count(self):
+        """frame counter
+        """
+        return self._ref.get().m_frameCount
+
 
 cdef class AVFCam(object):
     """
@@ -33,9 +89,9 @@ cdef class AVFCam(object):
 
     User should derive this class to get the callbacks, we do not provide any default implementations
     These are current callback methods that can be implemented in a subclass:
-        'def file_output_done(self, error)'
-        'def video_output(self, frame_buf, frame_count)'
-        'def image_output(self, frame_buf, exif=None)'
+        'def file_output_done(self, error:bool)'
+        'def video_output(self, frame:Frame)'
+        'def image_output(self, frame:Frame)'
     """
 
     # reference to the actual object
@@ -82,7 +138,7 @@ cdef class AVFCam(object):
         self._ref.get().record(name_str, duration, blocking)
 
     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
-        """record an image and call image_output
+        """take and save an image and call image_output
         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
         :param blocking: if should block until image is taken (or error happens)
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
@@ -101,7 +157,7 @@ cdef class AVFCam(object):
 
     @property
     def shape(self):
-        """video shape
+        """video shape (height, width)
         """
         dim = self._ref.get().get_dimension()
         return tuple(dim)

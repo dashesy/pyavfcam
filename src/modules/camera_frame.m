@@ -10,11 +10,16 @@
 #include "camera_frame.h"
 #include "utils.h"
 
+// Default constructor
+CameraFrame::CameraFrame(frameCount)
+    : m_bytesPerRow(0), m_width(0), m_height(0), m_frameCount(0),
+      m_exif(NULL)
+{
+}
 
 // Input is a frame reference, make a solid object from it
 CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
-    : m_bytesPerRow(0), m_width(0), m_height(0),
-      m_exif(NULL)
+    : CameraFrame(),
 {
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
@@ -124,4 +129,17 @@ void CameraFrame::save(std::string path, std::string uti_str, float quality)
         if (uti)
             CFRelease(uti);
         [pool drain];
+}
+
+// Get width and height of the frames in the sink
+std::vector<unsigned int> CameraFrame::get_dimension()
+{
+    std::vector<unsigned int> dim;
+    if (m_img.get() == NULL)
+        return dim;
+
+    dim.push_back((unsigned int)m_height);
+    dim.push_back((unsigned int)m_width);
+
+    return dim;
 }
