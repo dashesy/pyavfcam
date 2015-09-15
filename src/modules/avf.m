@@ -332,7 +332,7 @@ void CppAVFCam::file_output_done(bool error)
     if (!m_pObj)
         return;
 
-    int overridden;
+    int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
     PyObject * args = Py_BuildValue("(i)", error);
 
@@ -354,7 +354,13 @@ void CppAVFCam::video_output(CameraFrame &frame)
     if (!m_pObj)
         return;
 
-    // TODO: implement callback using memory buffer
+    int overridden = 0;
+    PyObject * kwargs = Py_BuildValue("{}");
+    PyObject * pObj = cy_get_frame(frame);
+    PyObject * args = Py_BuildValue("(O)", pObj);
+
+    // Call a virtual overload, if it exists
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 }
 
 // Video frame callback to Python
@@ -364,7 +370,13 @@ void CppAVFCam::image_output(CameraFrame &frame)
     if (!m_pObj)
         return;
 
-    // TODO: implement callback using memory buffer
+    int overridden = 0;
+    PyObject * kwargs = Py_BuildValue("{}");
+    PyObject * pObj = cy_get_frame(frame);
+    PyObject * args = Py_BuildValue("(O)", pObj);
+
+    // Call a virtual overload, if it exists
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)

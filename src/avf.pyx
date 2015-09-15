@@ -6,12 +6,21 @@ Purpose: Access camera through AVFoundation as a Cython extension class
 To keep dependencies to minimum, do not depend on numpy, instead return memoryviews
 """
 
-from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf, std_make_shared_avf, shared_ptr
+from avf cimport CppAVFCam, CameraFrame
+from avf cimport string, PyEval_InitThreads
+from avf cimport std_move_avf, std_make_shared_avf, shared_ptr, std_move_frame, std_make_shared_frame
 cimport cpython.ref as cpy_ref
 
 # the callback may come from a non-python thread
 PyEval_InitThreads()
 
+cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
+    """Create a Frame from CameraFrame
+    """
+    frame = Frame()
+    frame._ref = std_make_shared_frame(std_move_frame(frame))
+
+    return frame
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs) with gil:
     """single point of callback entry from C++ land
@@ -34,6 +43,14 @@ cdef class Frame(object):
     # reference to the actual object
     cdef shared_ptr[CameraFrame] _ref
 
+    def __repr__(self):
+        """represent what I am
+        """
+        return "Frame({frame_count}, shape={shape})".format(
+            frame_count=self.frame_count,
+            shape=self.shape
+        )
+
     def __dealloc__(self):
         """called when last reference is claimed
         """
@@ -48,7 +65,10 @@ cdef class Frame(object):
 
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
-        self._ref.get().save(name_str, uti_str, quality)
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Invalid frame!")
+        ref.save(name_str, uti_str, quality)
 
     @property
     def image(self):
@@ -61,7 +81,10 @@ cdef class Frame(object):
     def shape(self):
         """image shape (height, width)
         """
-        dim = self._ref.get().get_dimension()
+        ref = self._ref.get()
+        if ref == NULL:
+            return ()
+        dim = ref.get_dimension()
         return tuple(dim)
 
     @property
@@ -80,7 +103,10 @@ cdef class Frame(object):
     def frame_count(self):
         """frame counter
         """
-        return self._ref.get().m_frameCount
+        ref = self._ref.get()
+        if ref == NULL:
+            return -1
+        return ref.m_frameCount
 
 
 cdef class AVFCam(object):
@@ -97,7 +123,7 @@ cdef class AVFCam(object):
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
 
-    def __init__(self, sinks=None, *args, **kwargs):
+    def __cinit__(self, sinks=None, *args, **kwargs):
         """
         :param sinks: list of video sinks
             'file': File output (default)
@@ -122,6 +148,16 @@ cdef class AVFCam(object):
         self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
                                                                <cpy_ref.PyObject*>self)))
 
+        self._sinks = sinks
+
+    def __repr__(self):
+        """represent what I am
+        """
+        return "AVFCam({sinks}, shape={shape})".format(
+            sinks=self._sinks,
+            shape=self.shape
+        )
+
     def __dealloc__(self):
         """called when last reference is claimed
         """
@@ -135,7 +171,10 @@ cdef class AVFCam(object):
         """
 
         cdef string name_str = name.encode('UTF-8')
-        self._ref.get().record(name_str, duration, blocking)
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Camera reference not valid!")
+        ref.record(name_str, duration, blocking)
 
     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
         """take and save an image and call image_output
@@ -148,16 +187,25 @@ cdef class AVFCam(object):
         cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
-        self._ref.get().snap_picture(name_str, no_file, blocking, uti_str, quality)
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Camera reference not valid!")
+        ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
 
     def stop_recording(self):
         """stop current recording
         """
-        self._ref.get().stop_recording()
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Camera reference not valid!")
+        ref.stop_recording()
 
     @property
     def shape(self):
         """video shape (height, width)
         """
-        dim = self._ref.get().get_dimension()
+        ref = self._ref.get()
+        if ref == NULL:
+            return ()
+        dim = ref.get_dimension()
         return tuple(dim)

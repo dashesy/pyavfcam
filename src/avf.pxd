@@ -40,4 +40,7 @@ cdef extern from "<utility>" namespace "std":
         
     cdef CppAVFCam std_move_avf "std::move" (CppAVFCam) nogil
     cdef shared_ptr[CppAVFCam] std_make_shared_avf "std::make_shared" [CppAVFCam](CppAVFCam) nogil
-    
+
+    cdef CameraFrame std_move_frame "std::move" (CameraFrame) nogil
+    cdef shared_ptr[CameraFrame] std_make_shared_frame "std::make_shared" [CameraFrame](CameraFrame) nogil
+
