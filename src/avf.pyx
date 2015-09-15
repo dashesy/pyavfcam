@@ -67,7 +67,7 @@ cdef class Frame(object):
         cdef string uti_str = uti_type.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid frame!")
+            raise RuntimeError("Invalid reference!")
         ref.save(name_str, uti_str, quality)
 
     @property
@@ -91,13 +91,19 @@ cdef class Frame(object):
     def width(self):
         """image width
         """
-        return self._ref.get().m_width
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Invalid reference!")
+        return ref.m_width
 
     @property
     def height(self):
         """image height
         """
-        return self._ref.get().m_height
+        ref = self._ref.get()
+        if ref == NULL:
+            raise RuntimeError("Invalid reference!")
+        return ref.m_height
 
     @property
     def frame_count(self):
@@ -173,7 +179,7 @@ cdef class AVFCam(object):
         cdef string name_str = name.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Camera reference not valid!")
+            raise RuntimeError("Invalid reference!!")
         ref.record(name_str, duration, blocking)
 
     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
@@ -189,7 +195,7 @@ cdef class AVFCam(object):
         cdef string uti_str = uti_type.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Camera reference not valid!")
+            raise RuntimeError("Invalid reference!!")
         ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
 
     def stop_recording(self):
@@ -197,7 +203,7 @@ cdef class AVFCam(object):
         """
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Camera reference not valid!")
+            raise RuntimeError("Invalid reference!!")
         ref.stop_recording()
 
     @property
