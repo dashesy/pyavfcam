@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <limits>
 #include "avf.h"
 #include "camera_frame.h"
 #include "../avf_api.h"
@@ -381,15 +382,21 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned i
 }
 
 // Record to file video sink at given file path
-void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
+void CppAVFCam::record(std::string path, float duration, bool blocking)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
     if (!m_pVideoFileOutput)
         throw std::invalid_argument( "file video sink not initialized" );
 
-    if (duration == 0)
+    if (duration < 1)
         duration = 1;
+
+    bool no_duration = (duration == std::numeric_limits<float>::infinity());
+    if (no_duration && blocking) {
+        std::cout << "blocking recording for-ever turned to non-blocking!" << std::endl;
+        blocking = false;
+    }
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
@@ -406,7 +413,8 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
         file_error = nil;
 
         // Set the duration of the video, pretend fps is 600, be a nice sheep
-        [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds(duration, 600)];
+        if (!no_duration)
+            [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
 
         // Request for signaling when output done
         if (blocking)
@@ -421,9 +429,10 @@ void CppAVFCam::record(std::string path, unsigned int duration, bool blocking)
 
         // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
 
-        // Block on file output, time out in twice the expected time!
+        // Block on file output, time out in more than the expected time!
         if (blocking) {
-            [m_pCapture blockFileOutput:(uint64_t)((4 + duration) * NSEC_PER_SEC)];
+            uint64_t timeout = 4 + (unsigned int)duration;
+            [m_pCapture blockFileOutput:(uint64_t)(timeout * NSEC_PER_SEC)];
             [m_pVideoFileOutput stopRecording];
         }
     }

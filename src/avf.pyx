@@ -1,7 +1,7 @@
 """
 Created on Sept 7, 2015
 @author: dashesy
-Purpose: Access AVFoundation as a Cython extension class
+Purpose: Access camera through AVFoundation as a Cython extension class
 """
 
 from avf cimport CppAVFCam, string, PyEval_InitThreads, std_move_avf, std_make_shared_avf, shared_ptr
@@ -15,6 +15,8 @@ cdef public api void cy_call_func(object self, bint *overridden, char* method, o
     """single point of callback entry from C++ land
     :param overridden: return back to cpp if the method is implemented in Python
     :param method: bound method name to run
+    :param args: positional arguments to pass to the bound method
+    :param kwargs: keyword arguments to pass to the bound method
     """
     # see if it is implemented in a derived class
     func = getattr(self, method, None)
@@ -30,10 +32,10 @@ cdef class AVFCam(object):
     AVFoundation simple camera interface (base class)
 
     User should derive this class to get the callbacks, we do not provide any default implementations
-    These are current callback methods that can be implemented:
-        'file_output_done'
-        'video_output'
-        'image_output'
+    These are current callback methods that can be implemented in a subclass:
+        'def file_output_done(self, error)'
+        'def video_output(self, frame_buf, frame_count)'
+        'def image_output(self, frame_buf, exif=None)'
     """
 
     # reference to the actual object
@@ -72,7 +74,7 @@ cdef class AVFCam(object):
     def record(self, name, duration=20, blocking=True):
         """record a video and call file_output_done
         :param name: file path to create (will overwrite if it exists)
-        :param duration: duration of video to record (in seconds)
+        :param duration: duration of video to record (in seconds), can be inf
         :param blocking: if should block until recording is done (or error happens)
         """
 
@@ -81,7 +83,7 @@ cdef class AVFCam(object):
 
     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
         """record an image and call image_output
-        :param name: file path to create (will overwrite if it exists)
+        :param name: file path to create (will overwrite if it exists), if no name given only receives callback
         :param blocking: if should block until image is taken (or error happens)
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality

@@ -47,7 +47,7 @@ public:
     CppAVFCam & operator= (CppAVFCam &&other);
 
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
-    void record(std::string path, unsigned int duration, bool blocking=false);
+    void record(std::string path, float duration, bool blocking=false);
     void stop_recording();
     void snap_picture(std::string path, bool no_file, bool blocking=false,
                       std::string uti_str="", float quality=1.0);

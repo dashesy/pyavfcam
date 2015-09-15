@@ -20,7 +20,7 @@ video_name = None
 parg = None
 for arg in sys.argv:
     if parg == '-duration':
-        duration = int(arg)
+        duration = float(arg)
     if parg:
         parg = None
         continue
@@ -35,8 +35,8 @@ if video_name is None:
     raise ValueError('capture_video.py <video_name> [-duration <seconds>]')
 
 # Open the default video source
-video = pyavfcam.AVFCam()
+cam = pyavfcam.AVFCam()
 if duration:
-    video.record(video_name, duration=duration)
+    cam.record(video_name, duration=duration)
 
-    print "Saved " + video_name + " (Size: " + str(video.shape[0]) + " x " + str(video.shape[1]) + ")"
+    print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
