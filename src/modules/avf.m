@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <limits>
+#include <cmath>
 #include "avf.h"
 #include "camera_frame.h"
 #include "../avf_api.h"
