@@ -16,7 +16,7 @@ cimport cpython.ref as cpy_ref
 # the callback may come from a non-python thread
 PyEval_InitThreads()
 
-cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:
+cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
     """Create a Frame from CameraFrame
     """
     frame = Frame()

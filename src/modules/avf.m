@@ -351,7 +351,7 @@ void CppAVFCam::video_output(CameraFrame &frame)
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
-    PyObject * pObj = cy_get_frame(m_pObj, frame);
+    PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
     // Call a virtual overload, if it exists
@@ -369,7 +369,7 @@ void CppAVFCam::image_output(CameraFrame &frame)
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
-    PyObject * pObj = cy_get_frame(m_pObj, frame);
+    PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
     // Call a virtual overload, if it exists
