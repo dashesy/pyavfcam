@@ -56,7 +56,7 @@ public:
     void set_settings(unsigned int width, unsigned int height, unsigned int fps);
     void record(std::string path, float duration, unsigned int blocking=4);
     void stop_recording();
-    PyObject * snap_picture(std::string path, CameraFrame &frameCopy, unsigned int blocking=10,
+    PyObject * snap_picture(std::string path, unsigned int blocking=10,
                             std::string uti_str="", float quality=1.0);
     void get_device_formats();
     std::vector<unsigned int> get_dimension();

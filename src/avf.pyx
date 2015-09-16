@@ -24,7 +24,7 @@ cdef public api object cy_get_frame(CameraFrame & cframe):
     frame._ref = std_make_shared_frame(std_move_frame(cframe))
     return frame
 
-cdef public api void cy_call_func(object self, bint with_gil, bint *overridden, char* method, object args, object kwargs):
+cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     """single point of callback entry from C++ land
     :param overridden: return back to cpp if the method is implemented in Python
     :param method: bound method name to run
@@ -37,11 +37,7 @@ cdef public api void cy_call_func(object self, bint with_gil, bint *overridden, 
         overridden[0] = 0
     else:
         overridden[0] = 1
-        if with_gil:
-            with gil:
-                func(*args, **kwargs)
-        else:
-            func(*args, **kwargs)
+        func(*args, **kwargs)
 
 cdef class Frame(object):
     """CameraFrame wrapper with memoryview interface for the image

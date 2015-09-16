@@ -337,7 +337,7 @@ void CppAVFCam::file_output_done(bool error)
     PyObject * args = Py_BuildValue("(i)", error);
 
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, true, &overridden, (char*)__func__, args, kwargs);
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 
 
     if (!overridden)
@@ -357,7 +357,7 @@ void CppAVFCam::video_output(CameraFrame &frame)
     PyObject * args = Py_BuildValue("(O)", pObj);
 
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, true, &overridden, (char*)__func__, args, kwargs);
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 
     if (!overridden)
         m_haveVideoCallback = false;
@@ -375,8 +375,10 @@ PyObject * CppAVFCam::image_output(CameraFrame &frame)
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
+    //TODO: if !m_bBlockingImage make sure gil is aquired
+     
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, !m_bBlockingImage, &overridden, (char*)__func__, args, kwargs);
+    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 
     if (!overridden)
         m_haveImageCallback = false;
@@ -482,7 +484,7 @@ void CppAVFCam::stop_recording()
 }
 
 // Record to still image sink at given file path
-PyObject * CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned int blocking,
+PyObject * CppAVFCam::snap_picture(std::string path, unsigned int blocking,
                                    std::string uti_str, float quality)
 {
     if (!m_pCapture || !m_pSession)
@@ -545,14 +547,14 @@ PyObject * CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, uns
                         pObj = cy_get_frame(frame);
                     if (sem) {
                         dispatch_semaphore_signal(sem);
-                        std::cout << "signal" << std::endl;
+                        //std::cout << "signal" << std::endl;
                     }
 
                     [pool drain];
                 }
         }];
         if (sem) {
-            std::cout << " wait for signal" << std::endl;
+            //std::cout << " wait for signal" << std::endl;
             // This is blocking call so wait at most handful of seconds for the signal
             float wait = blocking;
             int err;
@@ -562,11 +564,8 @@ PyObject * CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, uns
                 if (wait <= 0)
                     break;
             }
-            if (!err)
-                frameCopy = std::move(_frame);
-            std::cout << "frame " << _frame.m_width << " "<< frameCopy.m_width << std::endl;
 
-            std::cout << " done waiting for " << wait << "err " << err << std::endl;
+            //std::cout << " done waiting for " << wait << "err " << err << std::endl;
             // dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }
