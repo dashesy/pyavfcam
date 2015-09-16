@@ -5,7 +5,7 @@
 #include "Python.h"
 #include "avf.h"
 
-static PyObject *(*__pyx_api_f_8pyavfcam_cy_get_frame)(PyObject *, CameraFrame &) = 0;
+static PyObject *(*__pyx_api_f_8pyavfcam_cy_get_frame)(CameraFrame &) = 0;
 #define cy_get_frame __pyx_api_f_8pyavfcam_cy_get_frame
 static void (*__pyx_api_f_8pyavfcam_cy_call_func)(PyObject *, int *, char *, PyObject *, PyObject *) = 0;
 #define cy_call_func __pyx_api_f_8pyavfcam_cy_call_func
@@ -92,7 +92,7 @@ static int import_pyavfcam(void) {
   PyObject *module = 0;
   module = __Pyx_ImportModule("pyavfcam");
   if (!module) goto bad;
-  if (__Pyx_ImportFunction(module, "cy_get_frame", (void (**)(void))&__pyx_api_f_8pyavfcam_cy_get_frame, "PyObject *(PyObject *, CameraFrame &)") < 0) goto bad;
+  if (__Pyx_ImportFunction(module, "cy_get_frame", (void (**)(void))&__pyx_api_f_8pyavfcam_cy_get_frame, "PyObject *(CameraFrame &)") < 0) goto bad;
   if (__Pyx_ImportFunction(module, "cy_call_func", (void (**)(void))&__pyx_api_f_8pyavfcam_cy_call_func, "void (PyObject *, int *, char *, PyObject *, PyObject *)") < 0) goto bad;
   Py_DECREF(module); module = 0;
   return 0;

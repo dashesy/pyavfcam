@@ -781,7 +781,7 @@ static PyTypeObject *__pyx_ptype_7cpython_4type_type = 0;
 /* Module declarations from 'pyavfcam' */
 static PyTypeObject *__pyx_ptype_8pyavfcam_Frame = 0;
 static PyTypeObject *__pyx_ptype_8pyavfcam_AVFCam = 0;
-__PYX_EXTERN_C DL_EXPORT(PyObject) *cy_get_frame(PyObject *, CameraFrame &); /*proto*/
+__PYX_EXTERN_C DL_EXPORT(PyObject) *cy_get_frame(CameraFrame &); /*proto*/
 __PYX_EXTERN_C DL_EXPORT(void) cy_call_func(PyObject *, int *, char *, PyObject *, PyObject *); /*proto*/
 static std::string __pyx_convert_string_from_py_std__in_string(PyObject *); /*proto*/
 static PyObject *__pyx_convert_vector_to_py_unsigned_int(const std::vector<unsigned int>  &); /*proto*/
@@ -885,12 +885,12 @@ static PyObject *__pyx_tuple__13;
 /* "src/avf.pyx":19
  * PyEval_InitThreads()
  * 
- * cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:             # <<<<<<<<<<<<<<
+ * cdef public api object cy_get_frame(CameraFrame & cframe) with gil:             # <<<<<<<<<<<<<<
  *     """Create a Frame from CameraFrame
  *     """
  */
 
-PyObject *cy_get_frame(CYTHON_UNUSED PyObject *__pyx_v_self, CameraFrame &__pyx_v_cframe) {
+PyObject *cy_get_frame(CameraFrame &__pyx_v_cframe) {
   struct __pyx_obj_8pyavfcam_Frame *__pyx_v_frame = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -902,7 +902,6 @@ PyObject *cy_get_frame(CYTHON_UNUSED PyObject *__pyx_v_self, CameraFrame &__pyx_
   PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
   #endif
   __Pyx_RefNannySetupContext("cy_get_frame", 0);
-  __Pyx_INCREF(__pyx_v_self);
 
   /* "src/avf.pyx":22
  *     """Create a Frame from CameraFrame
@@ -940,7 +939,7 @@ PyObject *cy_get_frame(CYTHON_UNUSED PyObject *__pyx_v_self, CameraFrame &__pyx_
   /* "src/avf.pyx":19
  * PyEval_InitThreads()
  * 
- * cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:             # <<<<<<<<<<<<<<
+ * cdef public api object cy_get_frame(CameraFrame & cframe) with gil:             # <<<<<<<<<<<<<<
  *     """Create a Frame from CameraFrame
  *     """
  */
@@ -952,7 +951,6 @@ PyObject *cy_get_frame(CYTHON_UNUSED PyObject *__pyx_v_self, CameraFrame &__pyx_
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_frame);
-  __Pyx_XDECREF(__pyx_v_self);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   #ifdef WITH_THREAD
@@ -3988,7 +3986,7 @@ PyMODINIT_FUNC PyInit_pyavfcam(void)
   /*--- Global init code ---*/
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
-  if (__Pyx_ExportFunction("cy_get_frame", (void (*)(void))cy_get_frame, "PyObject *(PyObject *, CameraFrame &)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_ExportFunction("cy_get_frame", (void (*)(void))cy_get_frame, "PyObject *(CameraFrame &)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__Pyx_ExportFunction("cy_call_func", (void (*)(void))cy_call_func, "void (PyObject *, int *, char *, PyObject *, PyObject *)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Type init code ---*/
   if (PyType_Ready(&__pyx_type_8pyavfcam_Frame) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -4040,7 +4038,7 @@ PyMODINIT_FUNC PyInit_pyavfcam(void)
  * # the callback may come from a non-python thread
  * PyEval_InitThreads()             # <<<<<<<<<<<<<<
  * 
- * cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:
+ * cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
  */
   PyEval_InitThreads();
 
