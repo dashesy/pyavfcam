@@ -532,11 +532,12 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     dispatch_queue_t imageQueue = dispatch_queue_create("imageQueue", NULL);
                     dispatch_async(imageQueue, ^(void) {
                             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                            std::cout << "inside" << std::endl;
                             CameraFrame frame(imageSampleBuffer);
                             if (!no_file)
                                 frame.save(path, uti_str, quality);
                             // Callback at the end
-                            bool consumed = image_output(frame);
+                            //bool consumed = image_output(frame);
                             if (blocking) {
                                 //frameCopy = std::move(frame);
         //                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
