@@ -21,7 +21,7 @@ cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:
     """
     frame = Frame()
     # this moves the ownership of the frame too
-    frame._ref = std_make_shared_frame(std_move_frame(frame))
+    frame._ref = std_make_shared_frame(std_move_frame(cframe))
 
     # keep last frame if it is blocking
     if self._is_blocking:
@@ -97,9 +97,9 @@ cdef class Frame(object):
         # this is the distance between two adjacent items in the vector.
         # Stride 0 is the distance between the first elements of adjacent rows.
         self.strides[1] = 4
-        self.strides[0] = ref.m_bytesPerRow
+        self.strides[0] = self._ref.m_bytesPerRow
 
-        buf.buf = <char *>ref.get()
+        buf.buf = <char *>ref
         buf.format = 'I'                     # RGBA
         buf.internal = NULL                  # see References
         buf.itemsize = itemsize

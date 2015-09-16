@@ -16,6 +16,7 @@ cdef extern from "modules/camera_frame.h":
 
     # noinspection PyPep8Naming
     cdef cppclass CameraFrame:
+        unsigned int m_frameCount
         size_t m_bytesPerRow
         size_t m_width, m_height
         CameraFrame()
