@@ -377,7 +377,8 @@ bool CppAVFCam::image_output(CameraFrame &frame)
     if (!overridden)
         m_haveImageCallback = false;
 
-    return true
+    // return true if image is consumed
+    return m_haveImageCallback
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
