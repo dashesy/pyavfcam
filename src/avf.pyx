@@ -162,6 +162,9 @@ cdef class AVFCam(object):
 
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
+    cdef bint _is_blocking
+    cdef object _sinks
+    cdef object _last_frame
 
     def __cinit__(self, sinks=None, *args, **kwargs):
         """
