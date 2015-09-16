@@ -184,14 +184,13 @@ cdef class AVFCam(object):
             if 'image' in sinks:
                 sink_image = True
 
-        # the one and only reference
-        self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
-                                                               <cpy_ref.PyObject*>self)))
-
-    def __init__(self, sinks=None, *args, **kwargs):
         self._sinks = sinks
         self._last_frame = None
         self._is_blocking = False
+
+        # the one and only reference
+        self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
+                                                               <cpy_ref.PyObject*>self)))
 
     def __repr__(self):
         """represent what I am
