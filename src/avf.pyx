@@ -97,7 +97,7 @@ cdef class Frame(object):
         # this is the distance between two adjacent items in the vector.
         # Stride 0 is the distance between the first elements of adjacent rows.
         self.strides[1] = 4
-        self.strides[0] = self._ref.m_bytesPerRow
+        self.strides[0] = ref.m_bytesPerRow
 
         buf.buf = <char *>ref
         buf.format = 'I'                     # RGBA
