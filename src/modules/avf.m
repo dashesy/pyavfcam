@@ -397,7 +397,7 @@ void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned i
 }
 
 // Record to file video sink at given file path
-void CppAVFCam::record(std::string path, float duration, bool blocking)
+void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
@@ -409,8 +409,8 @@ void CppAVFCam::record(std::string path, float duration, bool blocking)
 
     bool no_duration = (duration == std::numeric_limits<float>::infinity() || std::isnan(duration));
     if (no_duration && blocking) {
-        std::cout << "blocking recording without duration turned into non-blocking!" << std::endl;
-        blocking = false;
+        std::cout << "blocking non-stop recording turned into non-blocking!" << std::endl;
+        blocking = 0;
     }
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
@@ -446,7 +446,7 @@ void CppAVFCam::record(std::string path, float duration, bool blocking)
 
         // Block on file output, time out in more than the expected time!
         if (blocking) {
-            uint64_t timeout = 4 + (unsigned int)duration;
+            uint64_t timeout = blocking + (unsigned int)duration;
             [m_pCapture blockFileOutput:(uint64_t)(timeout * NSEC_PER_SEC)];
             [m_pVideoFileOutput stopRecording];
         }
@@ -476,7 +476,7 @@ void CppAVFCam::stop_recording()
 }
 
 // Record to still image sink at given file path
-void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
+void CppAVFCam::snap_picture(std::string path, bool no_file, unsigned int blocking,
                              std::string uti_str, float quality)
 {
     if (!m_pCapture || !m_pSession)
@@ -535,7 +535,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
         }];
         if (sem) {
             // This is blocking call so wait at most handful of seconds for the signal
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(10 * NSEC_PER_SEC));
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(blocking * NSEC_PER_SEC));
             dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }

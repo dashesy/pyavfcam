@@ -202,11 +202,11 @@ cdef class AVFCam(object):
         """
         self._ref.reset()
         
-    def record(self, name, duration=20, blocking=True):
+    def record(self, name, duration=20, blocking=4):
         """record a video and call file_output_done
         :param name: file path to create (will overwrite if it exists)
         :param duration: duration of video to record (in seconds), can be inf/nan to record with no duration
-        :param blocking: if should block until recording is done (or error happens)
+        :param blocking: how many extra seconds (if any) should block until recording is done (or error happens)
         """
 
         cdef string name_str = name.encode('UTF-8')
@@ -215,10 +215,10 @@ cdef class AVFCam(object):
             raise ValueError("Invalid reference!!")
         ref.record(name_str, duration, blocking)
 
-    def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
+    def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):
         """take and save an image and call image_output
         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
-        :param blocking: if should block until image is taken (or error happens)
+        :param blocking: how many seconds (if any) should block until image is taken (or error happens)
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
         """
