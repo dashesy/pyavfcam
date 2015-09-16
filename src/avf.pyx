@@ -16,12 +16,16 @@ cimport cpython.ref as cpy_ref
 # the callback may come from a non-python thread
 PyEval_InitThreads()
 
-cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
+cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:
     """Create a Frame from CameraFrame
     """
     frame = Frame()
     # this moves the ownership of the frame too
     frame._ref = std_make_shared_frame(std_move_frame(frame))
+
+    # keep last frame if it is blocking
+    if self._is_blocking:
+        self._last_frame = frame
 
     return frame
 
@@ -185,6 +189,8 @@ cdef class AVFCam(object):
                                                                <cpy_ref.PyObject*>self)))
 
         self._sinks = sinks
+        self._last_frame = None
+        self._is_blocking = False
 
     def __repr__(self):
         """represent what I am
@@ -219,6 +225,8 @@ cdef class AVFCam(object):
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
         """
+        # noinspection PyAttributeOutsideInit
+        self._is_blocking = blocking
 
         cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
@@ -227,6 +235,8 @@ cdef class AVFCam(object):
         if ref == NULL:
             raise ValueError("Invalid reference!!")
         ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
+        if blocking:
+            return self._last_frame
 
     def stop_recording(self):
         """stop current recording
