@@ -16,7 +16,7 @@ cimport cpython.ref as cpy_ref
 # the callback may come from a non-python thread
 PyEval_InitThreads()
 
-cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
+cdef public api object cy_get_frame(CameraFrame & cframe):
     """Create a Frame from CameraFrame
     """
     frame = Frame()
@@ -24,7 +24,7 @@ cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
     frame._ref = std_make_shared_frame(std_move_frame(cframe))
     return frame
 
-cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs) with gil:
+cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
     """single point of callback entry from C++ land
     :param overridden: return back to cpp if the method is implemented in Python
     :param method: bound method name to run
