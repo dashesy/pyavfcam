@@ -19,7 +19,7 @@ CameraFrame::CameraFrame(frameCount)
 
 // Input is a frame reference, make a solid object from it
 CameraFrame::CameraFrame(CMSampleBufferRef sampleBuffer)
-    : CameraFrame(),
+    : CameraFrame()
 {
     // Get a bitmap representation of the frame using CoreImage and Cocoa calls
 
