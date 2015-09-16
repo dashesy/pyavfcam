@@ -730,6 +730,8 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_unsigned_int(unsigned int value);
 
+static CYTHON_INLINE unsigned int __Pyx_PyInt_As_unsigned_int(PyObject *);
+
 static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *);
 
 static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *);
@@ -2654,7 +2656,7 @@ static void __pyx_pf_8pyavfcam_6AVFCam_4__dealloc__(struct __pyx_obj_8pyavfcam_A
  *         """
  *         self._ref.reset()             # <<<<<<<<<<<<<<
  * 
- *     def record(self, name, duration=20, blocking=True):
+ *     def record(self, name, duration=20, blocking=4):
  */
   __pyx_v_self->_ref.reset();
 
@@ -2673,14 +2675,14 @@ static void __pyx_pf_8pyavfcam_6AVFCam_4__dealloc__(struct __pyx_obj_8pyavfcam_A
 /* "src/avf.pyx":205
  *         self._ref.reset()
  * 
- *     def record(self, name, duration=20, blocking=True):             # <<<<<<<<<<<<<<
+ *     def record(self, name, duration=20, blocking=4):             # <<<<<<<<<<<<<<
  *         """record a video and call file_output_done
  *         :param name: file path to create (will overwrite if it exists)
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_8pyavfcam_6AVFCam_7record(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_8pyavfcam_6AVFCam_6record[] = "record a video and call file_output_done\n        :param name: file path to create (will overwrite if it exists)\n        :param duration: duration of video to record (in seconds), can be inf/nan to record with no duration\n        :param blocking: if should block until recording is done (or error happens)\n        ";
+static char __pyx_doc_8pyavfcam_6AVFCam_6record[] = "record a video and call file_output_done\n        :param name: file path to create (will overwrite if it exists)\n        :param duration: duration of video to record (in seconds), can be inf/nan to record with no duration\n        :param blocking: how many extra seconds (if any) should block until recording is done (or error happens)\n        ";
 static PyObject *__pyx_pw_8pyavfcam_6AVFCam_7record(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_name = 0;
   PyObject *__pyx_v_duration = 0;
@@ -2695,7 +2697,7 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_7record(PyObject *__pyx_v_self, PyOb
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_name,&__pyx_n_s_duration,&__pyx_n_s_blocking,0};
     PyObject* values[3] = {0,0,0};
     values[1] = ((PyObject *)__pyx_int_20);
-    values[2] = ((PyObject *)Py_True);
+    values[2] = ((PyObject *)__pyx_int_4);
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
@@ -2763,6 +2765,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   std::string __pyx_t_3;
   int __pyx_t_4;
   float __pyx_t_5;
+  unsigned int __pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2830,12 +2833,12 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
  *             raise ValueError("Invalid reference!!")
  *         ref.record(name_str, duration, blocking)             # <<<<<<<<<<<<<<
  * 
- *     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
+ *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):
  */
   __pyx_t_5 = __pyx_PyFloat_AsFloat(__pyx_v_duration); if (unlikely((__pyx_t_5 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_6 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   try {
-    __pyx_v_ref->record(__pyx_v_name_str, __pyx_t_5, __pyx_t_4);
+    __pyx_v_ref->record(__pyx_v_name_str, __pyx_t_5, __pyx_t_6);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 216; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2844,7 +2847,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   /* "src/avf.pyx":205
  *         self._ref.reset()
  * 
- *     def record(self, name, duration=20, blocking=True):             # <<<<<<<<<<<<<<
+ *     def record(self, name, duration=20, blocking=4):             # <<<<<<<<<<<<<<
  *         """record a video and call file_output_done
  *         :param name: file path to create (will overwrite if it exists)
  */
@@ -2866,14 +2869,14 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
 /* "src/avf.pyx":218
  *         ref.record(name_str, duration, blocking)
  * 
- *     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
+ *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
  *         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_8pyavfcam_6AVFCam_8snap_picture[] = "take and save an image and call image_output\n        :param name: file path to create (will overwrite if it exists), if no name given only receives callback\n        :param blocking: if should block until image is taken (or error happens)\n        :param uti_type: OSX uti/mime type string (will try to find the right one if not given)\n        :param quality: if compressed format this is the compression quality\n        ";
+static char __pyx_doc_8pyavfcam_6AVFCam_8snap_picture[] = "take and save an image and call image_output\n        :param name: file path to create (will overwrite if it exists), if no name given only receives callback\n        :param blocking: how many seconds (if any) should block until image is taken (or error happens)\n        :param uti_type: OSX uti/mime type string (will try to find the right one if not given)\n        :param quality: if compressed format this is the compression quality\n        ";
 static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_name = 0;
   PyObject *__pyx_v_blocking = 0;
@@ -2889,7 +2892,7 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_name,&__pyx_n_s_blocking,&__pyx_n_s_uti_type,&__pyx_n_s_quality,0};
     PyObject* values[4] = {0,0,0,0};
     values[0] = ((PyObject *)__pyx_kp_s_);
-    values[1] = ((PyObject *)Py_True);
+    values[1] = ((PyObject *)__pyx_int_4);
     values[2] = ((PyObject *)__pyx_kp_s_);
     values[3] = ((PyObject *)__pyx_float_1_0);
     if (unlikely(__pyx_kwds)) {
@@ -2971,7 +2974,8 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   PyObject *__pyx_t_3 = NULL;
   std::string __pyx_t_4;
   int __pyx_t_5;
-  float __pyx_t_6;
+  unsigned int __pyx_t_6;
+  float __pyx_t_7;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -3067,10 +3071,10 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
  * 
  *     def stop_recording(self):
  */
-  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_6 = __pyx_PyFloat_AsFloat(__pyx_v_quality); if (unlikely((__pyx_t_6 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_6 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __pyx_PyFloat_AsFloat(__pyx_v_quality); if (unlikely((__pyx_t_7 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   try {
-    __pyx_v_ref->snap_picture(__pyx_v_name_str, __pyx_v_no_file, __pyx_t_5, __pyx_v_uti_str, __pyx_t_6);
+    __pyx_v_ref->snap_picture(__pyx_v_name_str, __pyx_v_no_file, __pyx_t_6, __pyx_v_uti_str, __pyx_t_7);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3079,7 +3083,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   /* "src/avf.pyx":218
  *         ref.record(name_str, duration, blocking)
  * 
- *     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
+ *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
  *         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
  */
@@ -5191,6 +5195,190 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_unsigned_int(unsigned int value)
         return _PyLong_FromByteArray(bytes, sizeof(unsigned int),
                                      little, !is_unsigned);
     }
+}
+
+static CYTHON_INLINE unsigned int __Pyx_PyInt_As_unsigned_int(PyObject *x) {
+    const unsigned int neg_one = (unsigned int) -1, const_zero = (unsigned int) 0;
+    const int is_unsigned = neg_one > const_zero;
+#if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_Check(x))) {
+        if (sizeof(unsigned int) < sizeof(long)) {
+            __PYX_VERIFY_RETURN_INT(unsigned int, long, PyInt_AS_LONG(x))
+        } else {
+            long val = PyInt_AS_LONG(x);
+            if (is_unsigned && unlikely(val < 0)) {
+                goto raise_neg_overflow;
+            }
+            return (unsigned int) val;
+        }
+    } else
+#endif
+    if (likely(PyLong_Check(x))) {
+        if (is_unsigned) {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (unsigned int) 0;
+                case  1: __PYX_VERIFY_RETURN_INT(unsigned int, digit, digits[0])
+                case 2:
+                    if (8 * sizeof(unsigned int) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) >= 2 * PyLong_SHIFT) {
+                            return (unsigned int) (((((unsigned int)digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(unsigned int) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) >= 3 * PyLong_SHIFT) {
+                            return (unsigned int) (((((((unsigned int)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(unsigned int) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) >= 4 * PyLong_SHIFT) {
+                            return (unsigned int) (((((((((unsigned int)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+            }
+#endif
+#if CYTHON_COMPILING_IN_CPYTHON
+            if (unlikely(Py_SIZE(x) < 0)) {
+                goto raise_neg_overflow;
+            }
+#else
+            {
+                int result = PyObject_RichCompareBool(x, Py_False, Py_LT);
+                if (unlikely(result < 0))
+                    return (unsigned int) -1;
+                if (unlikely(result == 1))
+                    goto raise_neg_overflow;
+            }
+#endif
+            if (sizeof(unsigned int) <= sizeof(unsigned long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(unsigned int, unsigned long, PyLong_AsUnsignedLong(x))
+            } else if (sizeof(unsigned int) <= sizeof(unsigned PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(unsigned int, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
+            }
+        } else {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (unsigned int) 0;
+                case -1: __PYX_VERIFY_RETURN_INT(unsigned int, sdigit, -(sdigit) digits[0])
+                case  1: __PYX_VERIFY_RETURN_INT(unsigned int,  digit, +digits[0])
+                case -2:
+                    if (8 * sizeof(unsigned int) - 1 > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 2 * PyLong_SHIFT) {
+                            return (unsigned int) -(((((unsigned int)digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case 2:
+                    if (8 * sizeof(unsigned int) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 2 * PyLong_SHIFT) {
+                            return (unsigned int) (((((unsigned int)digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case -3:
+                    if (8 * sizeof(unsigned int) - 1 > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 3 * PyLong_SHIFT) {
+                            return (unsigned int) -(((((((unsigned int)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(unsigned int) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 3 * PyLong_SHIFT) {
+                            return (unsigned int) (((((((unsigned int)digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case -4:
+                    if (8 * sizeof(unsigned int) - 1 > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 4 * PyLong_SHIFT) {
+                            return (unsigned int) -(((((((((unsigned int)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(unsigned int) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(unsigned int, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0])))
+                        } else if (8 * sizeof(unsigned int) - 1 > 4 * PyLong_SHIFT) {
+                            return (unsigned int) (((((((((unsigned int)digits[3]) << PyLong_SHIFT) | digits[2]) << PyLong_SHIFT) | digits[1]) << PyLong_SHIFT) | digits[0]));
+                        }
+                    }
+                    break;
+            }
+#endif
+            if (sizeof(unsigned int) <= sizeof(long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(unsigned int, long, PyLong_AsLong(x))
+            } else if (sizeof(unsigned int) <= sizeof(PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(unsigned int, PY_LONG_LONG, PyLong_AsLongLong(x))
+            }
+        }
+        {
+#if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
+            PyErr_SetString(PyExc_RuntimeError,
+                            "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
+#else
+            unsigned int val;
+            PyObject *v = __Pyx_PyNumber_Int(x);
+ #if PY_MAJOR_VERSION < 3
+            if (likely(v) && !PyLong_Check(v)) {
+                PyObject *tmp = v;
+                v = PyNumber_Long(tmp);
+                Py_DECREF(tmp);
+            }
+ #endif
+            if (likely(v)) {
+                int one = 1; int is_little = (int)*(unsigned char *)&one;
+                unsigned char *bytes = (unsigned char *)&val;
+                int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                              bytes, sizeof(val),
+                                              is_little, !is_unsigned);
+                Py_DECREF(v);
+                if (likely(!ret))
+                    return val;
+            }
+#endif
+            return (unsigned int) -1;
+        }
+    } else {
+        unsigned int val;
+        PyObject *tmp = __Pyx_PyNumber_Int(x);
+        if (!tmp) return (unsigned int) -1;
+        val = __Pyx_PyInt_As_unsigned_int(tmp);
+        Py_DECREF(tmp);
+        return val;
+    }
+raise_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "value too large to convert to unsigned int");
+    return (unsigned int) -1;
+raise_neg_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "can't convert negative value to unsigned int");
+    return (unsigned int) -1;
 }
 
 static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *x) {
