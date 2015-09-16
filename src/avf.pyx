@@ -161,6 +161,7 @@ cdef class AVFCam(object):
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
     cdef object _sinks
+    cdef CameraFrame _frame;
 
     def __cinit__(self, sinks=None, *args, **kwargs):
         """
@@ -224,15 +225,14 @@ cdef class AVFCam(object):
         """
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
-        cdef CameraFrame frame;
 
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-        ref.snap_picture(name_str, frame, blocking, uti_str, quality)
+        ref.snap_picture(name_str, self._frame, blocking, uti_str, quality)
 
         if blocking:
-            return cy_get_frame(frame)
+            return cy_get_frame(self._frame)
 
     def stop_recording(self):
         """stop current recording
