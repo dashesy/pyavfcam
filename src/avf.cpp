@@ -868,6 +868,7 @@ static PyObject *__pyx_tp_new_8pyavfcam_Frame(PyTypeObject *t, PyObject *a, PyOb
 static PyObject *__pyx_tp_new_8pyavfcam_AVFCam(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_float_1_0;
 static PyObject *__pyx_int_4;
+static PyObject *__pyx_int_10;
 static PyObject *__pyx_int_20;
 static PyObject *__pyx_int_neg_1;
 static PyObject *__pyx_tuple__2;
@@ -2832,7 +2833,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
  *             raise ValueError("Invalid reference!!")
  *         ref.record(name_str, duration, blocking)             # <<<<<<<<<<<<<<
  * 
- *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):
+ *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):
  */
   __pyx_t_5 = __pyx_PyFloat_AsFloat(__pyx_v_duration); if (unlikely((__pyx_t_5 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_6 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_6 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2868,7 +2869,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
 /* "src/avf.pyx":219
  *         ref.record(name_str, duration, blocking)
  * 
- *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
+ *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
  *         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
  */
@@ -2891,7 +2892,7 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_name,&__pyx_n_s_blocking,&__pyx_n_s_uti_type,&__pyx_n_s_quality,0};
     PyObject* values[4] = {0,0,0,0};
     values[0] = ((PyObject *)__pyx_kp_s_);
-    values[1] = ((PyObject *)__pyx_int_4);
+    values[1] = ((PyObject *)__pyx_int_10);
     values[2] = ((PyObject *)__pyx_kp_s_);
     values[3] = ((PyObject *)__pyx_float_1_0);
     if (unlikely(__pyx_kwds)) {
@@ -3103,7 +3104,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   /* "src/avf.pyx":219
  *         ref.record(name_str, duration, blocking)
  * 
- *     def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
+ *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
  *         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
  */
@@ -3917,6 +3918,7 @@ static int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __pyx_float_1_0 = PyFloat_FromDouble(1.0); if (unlikely(!__pyx_float_1_0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_4 = PyInt_FromLong(4); if (unlikely(!__pyx_int_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_int_10 = PyInt_FromLong(10); if (unlikely(!__pyx_int_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_20 = PyInt_FromLong(20); if (unlikely(!__pyx_int_20)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_int_neg_1 = PyInt_FromLong(-1); if (unlikely(!__pyx_int_neg_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   return 0;

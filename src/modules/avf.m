@@ -522,31 +522,45 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
         dispatch_semaphore_t sem = NULL;
         if (blocking)
             sem = dispatch_semaphore_create(0);
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
                 
-                // TODO: take care of error handling
-                NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                CameraFrame frame(imageSampleBuffer);
-                if (!no_file)
-                    frame.save(path, uti_str, quality);
-                // Callback at the end
-                bool consumed = image_output(frame);
-                if (blocking) {
-//                     if (consumed)
-//                         frameCopy = std::move(frame.copy());
-//                     else
-//                         frameCopy = std::move(frame);
-                }
-                if (sem)
-                    dispatch_semaphore_signal(sem);
+                // take care of error handling
+                if (error) {
+                    NSLog(@"err %@", error); 
+                } else {
+                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                    CameraFrame frame(imageSampleBuffer);
+                    if (!no_file)
+                        frame.save(path, uti_str, quality);
+                    // Callback at the end
+                    bool consumed = image_output(frame);
+                    if (blocking) {
+                        //frameCopy = std::move(frame);
+                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
+//                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
+                        std::cout << "done" << std::endl;
+//                         if (consumed)
+//                             frameCopy = std::move(frame.copy());
+//                         else
+//                             frameCopy = std::move(frame);
+                    }
+                    if (sem) {
+                        dispatch_semaphore_signal(sem);
+                        std::cout << "signal" << std::endl;
+                    }
 
-                [pool drain];
+                    [pool drain];
+                }
         }];
+        [pool drain];
         if (sem) {
+            std::cout << " wait for signal" << std::endl;
             // This is blocking call so wait at most handful of seconds for the signal
             dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(blocking * NSEC_PER_SEC));
-            dispatch_semaphore_wait(sem, timeout);
+            std::cout << " done waiting" << dispatch_semaphore_wait(sem, timeout) << std::endl;
+            // dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }
     }

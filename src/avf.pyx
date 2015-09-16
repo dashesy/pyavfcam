@@ -216,7 +216,7 @@ cdef class AVFCam(object):
             raise ValueError("Invalid reference!!")
         ref.record(name_str, duration, blocking)
 
-    def snap_picture(self, name='', blocking=4, uti_type='', quality=1.0):
+    def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):
         """take and save an image and call image_output
         :param name: file path to create (will overwrite if it exists), if no name given only receives callback
         :param blocking: how many seconds (if any) should block until image is taken (or error happens)
