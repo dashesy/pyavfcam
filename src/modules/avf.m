@@ -164,7 +164,8 @@ CppAVFCam::CppAVFCam()
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL), m_pStillImageOutput(NULL),
-      m_videoFrameCount(0), m_imageFrameCount(0)
+      m_videoFrameCount(0), m_imageFrameCount(0),
+      m_haveImageCallback(true), m_haveVideoCallback(true), m_haveMovieCallback(true)
 {
 }
 
@@ -328,7 +329,7 @@ void CppAVFCam::file_output_done(bool error)
 {
     // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
 
-    if (!m_pObj)
+    if (!m_pObj || !m_haveMovieCallback)
         return;
 
     int overridden = 0;
@@ -337,20 +338,15 @@ void CppAVFCam::file_output_done(bool error)
 
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
-    if (!overridden) {
-        if (error)
-            std::cout << "   error recording " << this << std::endl;
-        else
-            std::cout << "   done recording " << this << std::endl;
-
-    }
+    if (!overridden)
+        m_haveMovieCallback = false;
 }
 
 // Video frame callback to Python
 void CppAVFCam::video_output(CameraFrame &frame)
 {
     frame.m_frameCount = m_videoFrameCount++;
-    if (!m_pObj)
+    if (!m_pObj || !m_haveVideoCallback)
         return;
 
     int overridden = 0;
@@ -360,13 +356,15 @@ void CppAVFCam::video_output(CameraFrame &frame)
 
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+    if (!overridden)
+        m_haveVideoCallback = false;
 }
 
 // Video frame callback to Python
 void CppAVFCam::image_output(CameraFrame &frame)
 {
     frame.m_frameCount = m_imageFrameCount++;
-    if (!m_pObj)
+    if (!m_pObj || !m_haveImageCallback)
         return;
 
     int overridden = 0;
@@ -376,6 +374,8 @@ void CppAVFCam::image_output(CameraFrame &frame)
 
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+    if (!overridden)
+        m_haveImageCallback = false;
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
