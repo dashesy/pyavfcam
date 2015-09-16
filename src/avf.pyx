@@ -188,6 +188,7 @@ cdef class AVFCam(object):
         self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
                                                                <cpy_ref.PyObject*>self)))
 
+    def __init__(self, sinks=None, *args, **kwargs):
         self._sinks = sinks
         self._last_frame = None
         self._is_blocking = False
@@ -225,7 +226,6 @@ cdef class AVFCam(object):
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
         """
-        # noinspection PyAttributeOutsideInit
         self._is_blocking = blocking
 
         cdef bint no_file = len(name) == 0
