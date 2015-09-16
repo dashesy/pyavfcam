@@ -547,6 +547,7 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
         //                             frameCopy = std::move(frame);
                             }
                             if (sem) {
+                                std::cout << "about to signal" << std::endl;
                                 dispatch_semaphore_signal(sem);
                                 std::cout << "signal" << std::endl;
                             }
