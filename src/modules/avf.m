@@ -216,7 +216,6 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
 
             if (m_pStillImageOutput) {
                 [m_pSession addOutput:m_pStillImageOutput];
-                // TODO: option to set other output formats
                 // If outputSettings is not set no iamge is returned
                 NSString* key = (NSString*)kCVPixelBufferPixelFormatTypeKey;
                 NSNumber* value = [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA];
@@ -527,6 +526,7 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, bool blocking,
                 CameraFrame frame(imageSampleBuffer);
                 if (!no_file)
                     frame.save(path, uti_str, quality);
+                // Callback at the end
                 image_output(frame);
                 if (sem)
                     dispatch_semaphore_signal(sem);

@@ -9,6 +9,8 @@ To keep dependencies to minimum, do not depend on numpy, instead return memoryvi
 from avf cimport CppAVFCam, CameraFrame
 from avf cimport string, PyEval_InitThreads
 from avf cimport std_move_avf, std_make_shared_avf, shared_ptr, std_move_frame, std_make_shared_frame
+# noinspection PyUnresolvedReferences
+from cpython.buffer cimport Py_buffer
 cimport cpython.ref as cpy_ref
 
 # the callback may come from a non-python thread
@@ -18,6 +20,7 @@ cdef public api object cy_get_frame(CameraFrame & cframe) with gil:
     """Create a Frame from CameraFrame
     """
     frame = Frame()
+    # this moves the ownership of the frame too
     frame._ref = std_make_shared_frame(std_move_frame(frame))
 
     return frame
@@ -42,6 +45,7 @@ cdef class Frame(object):
     """
     # reference to the actual object
     cdef shared_ptr[CameraFrame] _ref
+    cdef Py_ssize_t strides[2]
 
     def __repr__(self):
         """represent what I am
@@ -67,16 +71,42 @@ cdef class Frame(object):
         cdef string uti_str = uti_type.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!")
+            raise ValueError("Invalid reference!")
         ref.save(name_str, uti_str, quality)
 
-    @property
-    def image(self):
+    def __getbuffer__(self, Py_buffer *buf, int flags):
         """memoryview to the image buffer
         """
-        if len(self.shape) == 0:
-            return None
+        ref = self._ref.get()
+        if ref == NULL:
+            raise ValueError("Invalid buffer")
 
+        # It is a contiguous C-style memory so most flags are fine
+
+        cdef Py_ssize_t shape[2]
+        shape[0] = self.shape[0]
+        shape[1] = self.shape[1]
+
+        itemsize = 4  # bytes for each element
+
+        # Stride 1 is the distance, in bytes, between two items in a row;
+        # this is the distance between two adjacent items in the vector.
+        # Stride 0 is the distance between the first elements of adjacent rows.
+        self.strides[1] = 4
+        self.strides[0] = ref.m_bytesPerRow
+
+        buf.buf = <char *>ref.get()
+        buf.format = 'I'                     # RGBA
+        buf.internal = NULL                  # see References
+        buf.itemsize = itemsize
+        buf.len = shape[0] * shape[1] * itemsize   # product(shape) * itemsize
+        buf.ndim = 2
+        buf.obj = self
+        buf.readonly = 0
+        buf.shape = shape
+        buf.strides = self.strides
+        buf.suboffsets = NULL                # for pointer arrays only
+        
     @property
     def shape(self):
         """image shape (height, width)
@@ -93,7 +123,7 @@ cdef class Frame(object):
         """
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!")
+            raise ValueError("Invalid reference!")
         return ref.m_width
 
     @property
@@ -102,7 +132,7 @@ cdef class Frame(object):
         """
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!")
+            raise ValueError("Invalid reference!")
         return ref.m_height
 
     @property
@@ -179,7 +209,7 @@ cdef class AVFCam(object):
         cdef string name_str = name.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!!")
+            raise ValueError("Invalid reference!!")
         ref.record(name_str, duration, blocking)
 
     def snap_picture(self, name='', blocking=True, uti_type='', quality=1.0):
@@ -195,7 +225,7 @@ cdef class AVFCam(object):
         cdef string uti_str = uti_type.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!!")
+            raise ValueError("Invalid reference!!")
         ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
 
     def stop_recording(self):
@@ -203,7 +233,7 @@ cdef class AVFCam(object):
         """
         ref = self._ref.get()
         if ref == NULL:
-            raise RuntimeError("Invalid reference!!")
+            raise ValueError("Invalid reference!!")
         ref.stop_recording()
 
     @property
