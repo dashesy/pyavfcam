@@ -10,9 +10,6 @@
 #include <iostream>
 #include <limits>
 #include <cmath>
-#include <chrono>
-#include <condition_variable>
-#include <mutex>
 #include "avf.h"
 #include "camera_frame.h"
 #include "../avf_api.h"
@@ -522,12 +519,9 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
 
         // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
-//        dispatch_semaphore_t sem = NULL;
-        __block std::mutex m;
-        __block std::condition_variable cv;
-        std::unique_lock<std::mutex> lock( m );
-//        if (blocking)
-//            sem = dispatch_semaphore_create(0);
+        __block dispatch_semaphore_t sem = NULL;
+        if (blocking)
+            sem = dispatch_semaphore_create(0);
         [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
                              completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
                 
@@ -545,31 +539,27 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                         //frameCopy = std::move(frame);
                         std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
 //                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
-                        std::cout << "boz" << std::endl;
+                        std::cout << "done" << std::endl;
 //                         if (consumed)
 //                             frameCopy = std::move(frame.copy());
 //                         else
 //                             frameCopy = std::move(frame);
                     }
+                    if (sem) {
+                        dispatch_semaphore_signal(sem);
+                        std::cout << "signal" << std::endl;
+                    }
 
                     [pool drain];
                 }
-                if (blocking) {
-                    std::unique_lock<std::mutex> lk(m);
-//                        dispatch_semaphore_signal(sem);
-                    cv.notify_one();
-                    std::cout << "signal" << std::endl;
-                }
         }];
-        if (blocking) {
+        if (sem) {
             std::cout << " wait for signal" << std::endl;
             // This is blocking call so wait at most handful of seconds for the signal
-            //dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(blocking * NSEC_PER_SEC));
-            //std::cout << " done waiting" << dispatch_semaphore_wait(sem, timeout) << std::endl;
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(blocking * NSEC_PER_SEC));
+            std::cout << " done waiting" << dispatch_semaphore_wait(sem, timeout) << std::endl;
             // dispatch_semaphore_wait(sem, timeout);
-            //dispatch_release(sem);
-
-            std::cout << " done waiting" << ( cv.wait_for( lock, std::chrono::seconds(blocking) ) << std::endl;
+            dispatch_release(sem);
         }
     }
 
