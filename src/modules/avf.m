@@ -374,7 +374,7 @@ bool CppAVFCam::image_output(CameraFrame &frame)
 
     // Aquire GIL
     if (!m_bBlockingImage)
-        PyEval_AquireLock();
+        PyEval_AcquireLock();
     
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
