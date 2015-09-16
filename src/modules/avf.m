@@ -519,6 +519,7 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
 
         // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
+        static __block CameraFrame _frame;
         __block dispatch_semaphore_t sem = NULL;
         if (blocking)
             sem = dispatch_semaphore_create(0);
@@ -529,39 +530,42 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     // TODO: take care of error handling by reporting it if blocking
                     NSLog(@"err %@", error);
                 } else {
-                    dispatch_queue_t imageQueue = dispatch_queue_create("imageQueue", NULL);
-                    dispatch_async(imageQueue, ^(void) {
-                            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                            std::cout << "inside" << std::endl;
-                            CameraFrame frame(imageSampleBuffer);
-                            if (!no_file)
-                                frame.save(path, uti_str, quality);
-                            // Callback at the end
-                            //bool consumed = image_output(frame);
-                            if (blocking) {
-                                //frameCopy = std::move(frame);
-        //                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
-        //                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
-        //                         if (consumed)
-        //                             frameCopy = std::move(frame.copy());
-        //                         else
-        //                             frameCopy = std::move(frame);
-                            }
-                            if (sem) {
-                                std::cout << "about to signal" << std::endl;
-                                dispatch_semaphore_signal(sem);
-                                std::cout << "signal" << std::endl;
-                            }
+                        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                        std::cout << "inside" << std::endl;
+                        CameraFrame frame(imageSampleBuffer);
+                        if (!no_file)
+                            frame.save(path, uti_str, quality);
+                        // Callback at the end
+                        //bool consumed = image_output(frame);
+                        if (blocking) {
+                            //frameCopy = std::move(frame);
+    //                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
+    //                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
+    //                         if (consumed)
+    //                             frameCopy = std::move(frame.copy());
+    //                         else
+    //                             frameCopy = std::move(frame);
+                        }
+                        if (sem) {
+                            std::cout << "about to signal" << std::endl;
+                            dispatch_semaphore_signal(sem);
+                            std::cout << "signal" << std::endl;
+                        }
 
-                            [pool drain];
-                        });
+                        [pool drain];
                 }
         }];
         if (sem) {
             std::cout << " wait for signal" << std::endl;
             // This is blocking call so wait at most handful of seconds for the signal
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t)(blocking * NSEC_PER_SEC));
-            std::cout << " done waiting" << dispatch_semaphore_wait(sem, timeout) << std::endl;
+            float wait = blocking;
+            while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+                wait -= 0.05;
+                if (wait <= 0)
+                    break;
+            }
+            std::cout << " done waiting" << std::endl;
             // dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }
