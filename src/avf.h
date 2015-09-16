@@ -18,6 +18,7 @@
   #define DL_IMPORT(_T) _T
 #endif
 
+__PYX_EXTERN_C DL_IMPORT(PyObject) *cy_get_frame(PyObject *, CameraFrame &);
 __PYX_EXTERN_C DL_IMPORT(void) cy_call_func(PyObject *, int *, char *, PyObject *, PyObject *);
 
 #endif /* !__PYX_HAVE_API__pyavfcam */

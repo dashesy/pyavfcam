@@ -22,11 +22,6 @@ cdef public api object cy_get_frame(object self, CameraFrame & cframe) with gil:
     frame = Frame()
     # this moves the ownership of the frame too
     frame._ref = std_make_shared_frame(std_move_frame(cframe))
-
-    # keep last frame if it is blocking
-    if self._is_blocking:
-        self._last_frame = frame
-
     return frame
 
 cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs) with gil:
@@ -159,12 +154,13 @@ cdef class AVFCam(object):
         'def video_output(self, frame:Frame)'
         'def image_output(self, frame:Frame)'
     """
+    
+    # I can have weak reference
+    cdef object __weakref__
 
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
-    cdef bint _is_blocking
     cdef object _sinks
-    cdef object _last_frame
 
     def __cinit__(self, sinks=None, *args, **kwargs):
         """
@@ -188,8 +184,6 @@ cdef class AVFCam(object):
                 sink_image = True
 
         self._sinks = sinks
-        self._last_frame = None
-        self._is_blocking = False
 
         # the one and only reference
         self._ref = std_make_shared_avf(std_move_avf(CppAVFCam(sink_file, sink_callback, sink_image,
@@ -228,8 +222,6 @@ cdef class AVFCam(object):
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
         """
-        self._is_blocking = blocking
-
         cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
@@ -237,8 +229,6 @@ cdef class AVFCam(object):
         if ref == NULL:
             raise ValueError("Invalid reference!!")
         ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
-        if blocking:
-            return self._last_frame
 
     def stop_recording(self):
         """stop current recording
