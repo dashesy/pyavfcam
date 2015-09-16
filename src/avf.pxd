@@ -31,7 +31,8 @@ cdef extern from "modules/avf.h":
         CppAVFCam(bint sink_file, bint sink_callback, bint sink_image,
                   cpy_ref.PyObject *obj) except +
         void record(string path, float duration, unsigned int blocking) except +
-        void snap_picture(string path, bint no_file, unsigned int blocking, string uti_str, float quality) except +
+        void snap_picture(string path, bint no_file, unsigned int blocking, string uti_str, float quality,
+                          CameraFrame * pFrame) except +
         void stop_recording() except +
         vector[unsigned int] get_dimension()
 

@@ -225,10 +225,16 @@ cdef class AVFCam(object):
         cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
+        cdef CameraFrame frame;
+
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-        ref.snap_picture(name_str, no_file, blocking, uti_str, quality)
+        ref.snap_picture(name_str, no_file, blocking, uti_str, quality,
+                         &frame if blocking else NULL)
+
+        if blocking:
+            return cy_get_frame(frame)
 
     def stop_recording(self):
         """stop current recording

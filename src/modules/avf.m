@@ -480,7 +480,7 @@ void CppAVFCam::stop_recording()
 
 // Record to still image sink at given file path
 void CppAVFCam::snap_picture(std::string path, bool no_file, unsigned int blocking,
-                             std::string uti_str, float quality)
+                             std::string uti_str, float quality, CameraFrame * pFrameCopy)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
@@ -530,7 +530,13 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, unsigned int blocki
                 if (!no_file)
                     frame.save(path, uti_str, quality);
                 // Callback at the end
-                image_output(frame);
+                bool consumed = image_output(frame)
+                if (pFrameCopy) {
+                    if (consumed)
+                        *pFrameCopy = frame.copy();
+                    else
+                        *pFrameCopy = std::move(frame);
+                }
                 if (sem)
                     dispatch_semaphore_signal(sem);
 

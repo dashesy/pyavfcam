@@ -57,6 +57,28 @@ CameraFrame::~CameraFrame()
     }
 }
 
+// Make an explicite copy from self
+CameraFrame & CameraFrame::copy()
+{
+    CameraFrame frame;
+
+    frame.m_bytesPerRow = m_bytesPerRow;
+    frame.m_width = m_width;
+    frame.m_height = m_height;
+    frame.m_frameCount = m_frameCount;
+    if (m_exif)
+        frame.m_exif = CFDictionaryCreateMutableCopy(nil, 0, m_exif);
+
+    if (m_img.get()) {
+        const char * src_buff = (const char *)m_img.get();
+        char * dst_buf = new char[m_bytesPerRow * m_height];
+        std::memcpy(dst_buf, src_buff, m_bytesPerRow * m_height);
+        frame.m_img = std::unique_ptr<char[]>(dst_buf);
+    }
+
+    return std::move(frame);
+}
+
 // Save the frame to an image file
 void CameraFrame::save(std::string path, std::string uti_str, float quality)
 {

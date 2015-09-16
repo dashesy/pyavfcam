@@ -31,6 +31,7 @@ public:
     CameraFrame(CameraFrame &&other) = default;
     virtual ~CameraFrame();
 
+    CameraFrame & copy();
     void save(std::string path, std::string uti_type, float quality=1.0);
     std::vector<unsigned int> get_dimension();
 };
