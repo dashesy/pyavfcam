@@ -523,8 +523,8 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
         // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
 //        dispatch_semaphore_t sem = NULL;
-        std::mutex m;
-        std::condition_variable cv;
+        __block std::mutex m;
+        __block std::condition_variable cv;
         std::unique_lock<std::mutex> lock( m );
 //        if (blocking)
 //            sem = dispatch_semaphore_create(0);
