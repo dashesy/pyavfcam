@@ -28,6 +28,7 @@ private:
 public:
     CameraFrame();
     CameraFrame(CMSampleBufferRef sampleBuffer);
+    CppAVFCam(CppAVFCam &&other) = default;
     virtual ~CameraFrame();
 
     void save(std::string path, std::string uti_type, float quality=1.0);
