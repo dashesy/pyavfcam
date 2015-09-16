@@ -519,7 +519,7 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
 
         // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
-        static __block CameraFrame _frame;
+        __block CameraFrame _frame;
         __block dispatch_semaphore_t sem = NULL;
         if (blocking)
             sem = dispatch_semaphore_create(0);
@@ -536,15 +536,12 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                         if (!no_file)
                             frame.save(path, uti_str, quality);
                         // Callback at the end
-                        //bool consumed = image_output(frame);
+                        bool consumed = image_output(frame);
                         if (blocking) {
-                            //frameCopy = std::move(frame);
-    //                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
-    //                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
-    //                         if (consumed)
-    //                             frameCopy = std::move(frame.copy());
-    //                         else
-    //                             frameCopy = std::move(frame);
+                            if (consumed)
+                                _frame = std::move(frame.copy());
+                            else
+                                _frame = std::move(frame);
                         }
                         if (sem) {
                             std::cout << "about to signal" << std::endl;
@@ -559,13 +556,17 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
             std::cout << " wait for signal" << std::endl;
             // This is blocking call so wait at most handful of seconds for the signal
             float wait = blocking;
-            while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
+            int err;
+            while ((err = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW))) {
                 CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
                 wait -= 0.05;
                 if (wait <= 0)
                     break;
             }
-            std::cout << " done waiting" << std::endl;
+            if (!err)
+                frameCopy = std::move(_frame);
+
+            std::cout << " done waiting for " << wait << std::endl;
             // dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }
