@@ -105,7 +105,12 @@ cdef class Frame(object):
         buf.shape = shape
         buf.strides = self.strides
         buf.suboffsets = NULL                # for pointer arrays only
-        
+
+    def __releasebuffer__(self, Py_buffer *buf):
+        """need this even though not used
+        """
+        pass
+
     @property
     def shape(self):
         """image shape (height, width)
