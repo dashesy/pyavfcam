@@ -336,16 +336,9 @@ void CppAVFCam::file_output_done(bool error)
     PyObject * kwargs = Py_BuildValue("{}");
     PyObject * args = Py_BuildValue("(i)", error);
 
-    // Aquire GIL
-    if (!m_bBlockingImage)
-        PyEval_AcquireLock();
-
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+    cy_call_func(m_pObj, true, &overridden, (char*)__func__, args, kwargs);
 
-    // Release GIL
-    if (!m_bBlockingImage)
-        PyEval_ReleaseLock();
 
     if (!overridden)
         m_haveMovieCallback = false;
@@ -363,49 +356,32 @@ void CppAVFCam::video_output(CameraFrame &frame)
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
-    // Aquire GIL
-    if (!m_bBlockingImage)
-        PyEval_AcquireLock();
-
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
-
-    // Release GIL
-    if (!m_bBlockingImage)
-        PyEval_ReleaseLock();
+    cy_call_func(m_pObj, true, &overridden, (char*)__func__, args, kwargs);
 
     if (!overridden)
         m_haveVideoCallback = false;
 }
 
 // Video frame callback to Python
-bool CppAVFCam::image_output(CameraFrame &frame)
+PyObject * CppAVFCam::image_output(CameraFrame &frame)
 {
     frame.m_frameCount = m_imageFrameCount++;
     if (!m_pObj || !m_haveImageCallback)
-        return false;
+        return NULL;
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
-    // Aquire GIL
-    if (!m_bBlockingImage)
-        PyEval_AcquireLock();
-    
     // Call a virtual overload, if it exists
-    cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
-
-    // Release GIL
-    if (!m_bBlockingImage)
-        PyEval_ReleaseLock();
+    cy_call_func(m_pObj, !m_bBlockingImage, &overridden, (char*)__func__, args, kwargs);
 
     if (!overridden)
         m_haveImageCallback = false;
 
-    // return true if image is consumed
-    return m_haveImageCallback;
+    return pObj;
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
@@ -506,8 +482,8 @@ void CppAVFCam::stop_recording()
 }
 
 // Record to still image sink at given file path
-void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned int blocking,
-                             std::string uti_str, float quality)
+PyObject * CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned int blocking,
+                                   std::string uti_str, float quality)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
@@ -544,11 +520,11 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                 break;
         }
     }
+    __block PyObject * pObj = NULL;
     if (videoConnection) {
 
         // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
 
-        __block CameraFrame _frame;
         __block dispatch_semaphore_t sem = NULL;
         if (blocking)
             sem = dispatch_semaphore_create(0);
@@ -564,13 +540,9 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     if (!no_file)
                         frame.save(path, uti_str, quality);
                     // Callback at the end
-                    bool consumed = image_output(frame);
-                    if (blocking) {
-                        if (consumed)
-                            _frame = std::move(frame.copy());
-                        else
-                            _frame = std::move(frame);
-                    }
+                    pObj = image_output(frame);
+                    if (pObj == NULL && blocking)
+                        pObj = cy_get_frame(frame);
                     if (sem) {
                         dispatch_semaphore_signal(sem);
                         std::cout << "signal" << std::endl;
@@ -607,6 +579,12 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
         throw std::invalid_argument( "invalid or inaccessable file path" );
     if (!videoConnection)
         throw std::runtime_error( "connection error" );
+
+    if (pObj == NULL) {
+        Py_INCREF(Py_None);
+        pObj = Py_None;
+    }
+    return pObj;
 }
 
 // Return a list with items that can be passed to a set_format method

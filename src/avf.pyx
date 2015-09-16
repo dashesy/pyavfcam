@@ -24,7 +24,7 @@ cdef public api object cy_get_frame(CameraFrame & cframe):
     frame._ref = std_make_shared_frame(std_move_frame(cframe))
     return frame
 
-cdef public api void cy_call_func(object self, bint *overridden, char* method, object args, object kwargs):
+cdef public api void cy_call_func(object self, bint with_gil, bint *overridden, char* method, object args, object kwargs):
     """single point of callback entry from C++ land
     :param overridden: return back to cpp if the method is implemented in Python
     :param method: bound method name to run
@@ -37,7 +37,11 @@ cdef public api void cy_call_func(object self, bint *overridden, char* method, o
         overridden[0] = 0
     else:
         overridden[0] = 1
-        func(*args, **kwargs)
+        if with_gil:
+            with gil:
+                func(*args, **kwargs)
+        else:
+            func(*args, **kwargs)
 
 cdef class Frame(object):
     """CameraFrame wrapper with memoryview interface for the image
@@ -166,7 +170,6 @@ cdef class AVFCam(object):
     # reference to the actual object
     cdef shared_ptr[CppAVFCam] _ref
     cdef object _sinks
-    cdef CameraFrame _frame;
 
     def __cinit__(self, sinks=None, *args, **kwargs):
         """
@@ -234,10 +237,10 @@ cdef class AVFCam(object):
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-        ref.snap_picture(name_str, self._frame, blocking, uti_str, quality)
+        frame = ref.snap_picture(name_str, blocking, uti_str, quality)
 
         if blocking:
-            return cy_get_frame(self._frame)
+            return frame
 
     def stop_recording(self):
         """stop current recording
