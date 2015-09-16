@@ -11,7 +11,7 @@
 #include "utils.h"
 
 // Default constructor
-CameraFrame::CameraFrame(frameCount)
+CameraFrame::CameraFrame()
     : m_bytesPerRow(0), m_width(0), m_height(0), m_frameCount(0),
       m_exif(NULL)
 {
