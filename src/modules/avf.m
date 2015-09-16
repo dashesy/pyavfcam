@@ -372,8 +372,17 @@ bool CppAVFCam::image_output(CameraFrame &frame)
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
+    // Aquire GIL
+    if (!m_bBlockingImage)
+        PyEval_AquireLock();
+    
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+
+    // Release GIL
+    if (!m_bBlockingImage)
+        PyEval_ReleaseLock();
+
     if (!overridden)
         m_haveImageCallback = false;
 
@@ -486,6 +495,8 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
         throw std::invalid_argument( "session not initialized" );
     if (!m_pStillImageOutput)
         throw std::invalid_argument( "image video sink not initialized" );
+        
+    m_bBlockingImage = blocking > 0;
 
     bool no_file = path.length() == 0;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
@@ -530,26 +541,26 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     // TODO: take care of error handling by reporting it if blocking
                     NSLog(@"err %@", error);
                 } else {
-                        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                        std::cout << "inside" << std::endl;
-                        CameraFrame frame(imageSampleBuffer);
-                        if (!no_file)
-                            frame.save(path, uti_str, quality);
-                        // Callback at the end
-                        bool consumed = image_output(frame);
-                        if (blocking) {
-                            if (consumed)
-                                _frame = std::move(frame.copy());
-                            else
-                                _frame = std::move(frame);
-                        }
-                        if (sem) {
-                            std::cout << "about to signal" << std::endl;
-                            dispatch_semaphore_signal(sem);
-                            std::cout << "signal" << std::endl;
-                        }
+                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                    std::cout << "inside" << std::endl;
+                    CameraFrame frame(imageSampleBuffer);
+                    if (!no_file)
+                        frame.save(path, uti_str, quality);
+                    // Callback at the end
+                    bool consumed = image_output(frame);
+                    if (blocking) {
+                        if (consumed)
+                            _frame = std::move(frame.copy());
+                        else
+                            _frame = std::move(frame);
+                    }
+                    if (sem) {
+                        std::cout << "about to signal" << std::endl;
+                        dispatch_semaphore_signal(sem);
+                        std::cout << "signal" << std::endl;
+                    }
 
-                        [pool drain];
+                    [pool drain];
                 }
         }];
         if (sem) {

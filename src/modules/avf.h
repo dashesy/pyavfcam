@@ -32,6 +32,9 @@ private:
     AVCaptureStillImageOutput * m_pStillImageOutput;
 
 private:
+    bool m_bBlockingImage;
+
+private:
     unsigned int m_videoFrameCount, m_imageFrameCount;
     bool m_haveImageCallback, m_haveVideoCallback, m_haveMovieCallback;
 
