@@ -378,7 +378,7 @@ bool CppAVFCam::image_output(CameraFrame &frame)
         m_haveImageCallback = false;
 
     // return true if image is consumed
-    return m_haveImageCallback
+    return m_haveImageCallback;
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
@@ -479,14 +479,15 @@ void CppAVFCam::stop_recording()
 }
 
 // Record to still image sink at given file path
-void CppAVFCam::snap_picture(std::string path, bool no_file, unsigned int blocking,
-                             std::string uti_str, float quality, CameraFrame * pFrameCopy)
+void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned int blocking,
+                             std::string uti_str, float quality)
 {
     if (!m_pCapture || !m_pSession)
         throw std::invalid_argument( "session not initialized" );
     if (!m_pStillImageOutput)
         throw std::invalid_argument( "image video sink not initialized" );
 
+    bool no_file = path.length() == 0;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     NSError *file_error = nil;
@@ -530,12 +531,12 @@ void CppAVFCam::snap_picture(std::string path, bool no_file, unsigned int blocki
                 if (!no_file)
                     frame.save(path, uti_str, quality);
                 // Callback at the end
-                bool consumed = image_output(frame)
-                if (pFrameCopy) {
-                    if (consumed)
-                        *pFrameCopy = frame.copy();
-                    else
-                        *pFrameCopy = std::move(frame);
+                bool consumed = image_output(frame);
+                if (blocking) {
+//                     if (consumed)
+//                         frameCopy = std::move(frame.copy());
+//                     else
+//                         frameCopy = std::move(frame);
                 }
                 if (sem)
                     dispatch_semaphore_signal(sem);

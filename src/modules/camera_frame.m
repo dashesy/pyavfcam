@@ -58,7 +58,7 @@ CameraFrame::~CameraFrame()
 }
 
 // Make an explicite copy from self
-CameraFrame & CameraFrame::copy()
+CameraFrame CameraFrame::copy()
 {
     CameraFrame frame;
 
@@ -76,7 +76,7 @@ CameraFrame & CameraFrame::copy()
         frame.m_img = std::unique_ptr<char[]>(dst_buf);
     }
 
-    return std::move(frame);
+    return frame;
 }
 
 // Save the frame to an image file

@@ -222,7 +222,6 @@ cdef class AVFCam(object):
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
         """
-        cdef bint no_file = len(name) == 0
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
         cdef CameraFrame frame;
@@ -230,8 +229,7 @@ cdef class AVFCam(object):
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-        ref.snap_picture(name_str, no_file, blocking, uti_str, quality,
-                         &frame if blocking else NULL)
+        ref.snap_picture(name_str, frame, blocking, uti_str, quality)
 
         if blocking:
             return cy_get_frame(frame)
