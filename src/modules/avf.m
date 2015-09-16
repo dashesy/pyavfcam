@@ -529,7 +529,7 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     // TODO: take care of error handling by reporting it if blocking
                     NSLog(@"err %@", error);
                 } else {
-                    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+                    dispatch_async(dispatch_get_main_queue(), ^(void) {
                             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                             CameraFrame frame(imageSampleBuffer);
                             if (!no_file)
