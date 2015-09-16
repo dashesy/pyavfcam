@@ -529,28 +529,29 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     // TODO: take care of error handling by reporting it if blocking
                     NSLog(@"err %@", error);
                 } else {
-                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                    CameraFrame frame(imageSampleBuffer);
-                    if (!no_file)
-                        frame.save(path, uti_str, quality);
-                    // Callback at the end
-                    bool consumed = image_output(frame);
-                    if (blocking) {
-                        //frameCopy = std::move(frame);
-                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
-//                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
-                        std::cout << "done" << std::endl;
-//                         if (consumed)
-//                             frameCopy = std::move(frame.copy());
-//                         else
-//                             frameCopy = std::move(frame);
-                    }
-                    if (sem) {
-                        dispatch_semaphore_signal(sem);
-                        std::cout << "signal" << std::endl;
-                    }
+                    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+                            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                            CameraFrame frame(imageSampleBuffer);
+                            if (!no_file)
+                                frame.save(path, uti_str, quality);
+                            // Callback at the end
+                            bool consumed = image_output(frame);
+                            if (blocking) {
+                                //frameCopy = std::move(frame);
+        //                        std::cout << " baha " << frameCopy.m_frameCount << " " << frame.m_frameCount << " " << std::endl;
+        //                         std::cout << " more " <<frameCopy.m_img.get() << " " << frame.m_img.get() << " d\n" << std::endl;/
+        //                         if (consumed)
+        //                             frameCopy = std::move(frame.copy());
+        //                         else
+        //                             frameCopy = std::move(frame);
+                            }
+                            if (sem) {
+                                dispatch_semaphore_signal(sem);
+                                std::cout << "signal" << std::endl;
+                            }
 
-                    [pool drain];
+                            [pool drain];
+                        });
                 }
         }];
         if (sem) {
