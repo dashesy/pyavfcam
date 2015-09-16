@@ -38,7 +38,7 @@ private:
 public:
     virtual void file_output_done(bool error);
     virtual void video_output(CameraFrame &frame);
-    virtual void image_output(CameraFrame &frame);
+    virtual bool image_output(CameraFrame &frame);
 
 public:
 

@@ -361,11 +361,11 @@ void CppAVFCam::video_output(CameraFrame &frame)
 }
 
 // Video frame callback to Python
-void CppAVFCam::image_output(CameraFrame &frame)
+bool CppAVFCam::image_output(CameraFrame &frame)
 {
     frame.m_frameCount = m_imageFrameCount++;
     if (!m_pObj || !m_haveImageCallback)
-        return;
+        return false;
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
@@ -376,6 +376,8 @@ void CppAVFCam::image_output(CameraFrame &frame)
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
     if (!overridden)
         m_haveImageCallback = false;
+
+    return true
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
