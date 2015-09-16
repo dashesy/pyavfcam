@@ -336,8 +336,17 @@ void CppAVFCam::file_output_done(bool error)
     PyObject * kwargs = Py_BuildValue("{}");
     PyObject * args = Py_BuildValue("(i)", error);
 
+    // Aquire GIL
+    if (!m_bBlockingImage)
+        PyEval_AcquireLock();
+
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+
+    // Release GIL
+    if (!m_bBlockingImage)
+        PyEval_ReleaseLock();
+
     if (!overridden)
         m_haveMovieCallback = false;
 }
@@ -354,8 +363,17 @@ void CppAVFCam::video_output(CameraFrame &frame)
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
+    // Aquire GIL
+    if (!m_bBlockingImage)
+        PyEval_AcquireLock();
+
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
+
+    // Release GIL
+    if (!m_bBlockingImage)
+        PyEval_ReleaseLock();
+
     if (!overridden)
         m_haveVideoCallback = false;
 }
@@ -542,7 +560,6 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                     NSLog(@"err %@", error);
                 } else {
                     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                    std::cout << "inside" << std::endl;
                     CameraFrame frame(imageSampleBuffer);
                     if (!no_file)
                         frame.save(path, uti_str, quality);
@@ -555,7 +572,6 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
                             _frame = std::move(frame);
                     }
                     if (sem) {
-                        std::cout << "about to signal" << std::endl;
                         dispatch_semaphore_signal(sem);
                         std::cout << "signal" << std::endl;
                     }
@@ -576,8 +592,9 @@ void CppAVFCam::snap_picture(std::string path, CameraFrame &frameCopy, unsigned 
             }
             if (!err)
                 frameCopy = std::move(_frame);
+            std::cout << "frame " << _frame.m_width << " "<< frameCopy.m_width << std::endl;
 
-            std::cout << " done waiting for " << wait << std::endl;
+            std::cout << " done waiting for " << wait << "err " << err << std::endl;
             // dispatch_semaphore_wait(sem, timeout);
             dispatch_release(sem);
         }
