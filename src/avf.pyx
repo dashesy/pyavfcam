@@ -50,9 +50,9 @@ cdef class Frame(object):
     def __repr__(self):
         """represent what I am
         """
-        return "Frame({frame_count}, shape={shape})".format(
+        return "Frame({frame_count}, shape={shape}".format(
             frame_count=self.frame_count,
-            shape=self.shape
+            shape=self._shape
         )
 
     def __dealloc__(self):
@@ -128,6 +128,16 @@ cdef class Frame(object):
         if ref == NULL:
             raise ValueError("Invalid reference!")
         return ref.m_height
+
+    @property
+    def _shape(self):
+        """frame shape (height, width)
+        """
+        ref = self._ref.get()
+        if ref == NULL:
+            return ()
+        dim = ref.get_dimension()
+        return tuple(dim)
 
     @property
     def frame_count(self):
