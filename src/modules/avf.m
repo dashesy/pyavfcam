@@ -375,11 +375,17 @@ PyObject * CppAVFCam::image_output(CameraFrame &frame)
     PyObject * pObj = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
-    //TODO: if !m_bBlockingImage make sure gil is aquired
-     
+    // If non-blocking it is from a foreign thread make sure gil is aquired
+    PyGILState_STATE gstate;
+    if (!m_bBlockingImage)
+        gstate = PyGILState_Ensure();
+
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 
+    if (!m_bBlockingImage)
+        PyGILState_Release(gstate);
+        
     if (!overridden)
         m_haveImageCallback = false;
 
