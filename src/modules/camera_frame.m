@@ -79,6 +79,12 @@ CameraFrame CameraFrame::copy()
     return frame;
 }
 
+// Get the internal data directly
+char * CameraFrame::data()
+{
+    return m_img.get();
+}
+
 // Save the frame to an image file
 void CameraFrame::save(std::string path, std::string uti_str, float quality)
 {

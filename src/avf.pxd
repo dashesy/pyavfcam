@@ -22,6 +22,7 @@ cdef extern from "modules/camera_frame.h":
         CameraFrame()
         void save(string path, string uti_type, float quality) except +
         vector[unsigned int] get_dimension()
+        char * data()
 
 cdef extern from "modules/avf.h":
 

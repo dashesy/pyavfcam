@@ -45,6 +45,7 @@ cdef class Frame(object):
     # reference to the actual object
     cdef shared_ptr[CameraFrame] _ref
     cdef Py_ssize_t strides[2]
+    cdef Py_ssize_t shape[2]
 
     def __repr__(self):
         """represent what I am
@@ -81,11 +82,10 @@ cdef class Frame(object):
             raise ValueError("Invalid buffer")
 
         # It is a contiguous C-style memory so most flags are fine
-
-        cdef Py_ssize_t shape[2]
-        shape[0] = self.shape[0]
-        shape[1] = self.shape[1]
-
+        dim = ref.get_dimension()
+        self.shape[0] = dim[0]
+        self.shape[1] = dim[1]
+        
         itemsize = 4  # bytes for each element
 
         # Stride 1 is the distance, in bytes, between two items in a row;
@@ -94,15 +94,15 @@ cdef class Frame(object):
         self.strides[1] = 4
         self.strides[0] = ref.m_bytesPerRow
 
-        buf.buf = <char *>ref
-        buf.format = 'I'                     # RGBA
+        buf.buf = <char *>ref.data()
+        buf.format = 'BBBB'                  # BGRA
         buf.internal = NULL                  # see References
         buf.itemsize = itemsize
-        buf.len = shape[0] * shape[1] * itemsize   # product(shape) * itemsize
+        buf.len = self.shape[0] * self.shape[1] * itemsize   # product(shape) * itemsize
         buf.ndim = 2
         buf.obj = self
         buf.readonly = 0
-        buf.shape = shape
+        buf.shape = self.shape
         buf.strides = self.strides
         buf.suboffsets = NULL                # for pointer arrays only
 
@@ -110,16 +110,6 @@ cdef class Frame(object):
         """need this even though not used
         """
         pass
-
-    @property
-    def shape(self):
-        """image shape (height, width)
-        """
-        ref = self._ref.get()
-        if ref == NULL:
-            return ()
-        dim = ref.get_dimension()
-        return tuple(dim)
 
     @property
     def width(self):
