@@ -18,7 +18,9 @@ duration = 10
 video_name = None
 
 parg = None
-for arg in sys.argv:
+for arg_idx, arg in enumerate(sys.argv):
+    if arg_idx == 0:
+        continue
     if parg == '-duration':
         duration = float(arg)
     if parg:
