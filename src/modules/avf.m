@@ -256,39 +256,54 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
 CppAVFCam::~CppAVFCam()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    
+    // BUG: AVFoundation causes segfaults if release some of these, 
+    //      this is only evident if object lives in a non-main thread.
+    //      potential for memory leak is annoying but I cannot find a safe way to deallocate.  
 
     if (m_pSession) {
+        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession stopRunning];
+        // Remove the connections so the library might clean up
+        for (AVCaptureInput *input1 in m_pSession.inputs)
+            [m_pSession removeInput:input1];
+        for (AVCaptureOutput *output1 in m_pSession.outputs)
+            [m_pSession removeOutput:output1];
+        [m_pSession stopRunning];
+        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession release];
         m_pSession = NULL;
     }
 
     if (m_pVideoInput) {
-        [m_pVideoInput release];
+        //std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
+        //[m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        [m_pVideoFileOutput release];
+        //std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
+        //[m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
      }
 
     if (m_pStillImageOutput) {
-        [m_pStillImageOutput release];
+        //std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
+        //[m_pStillImageOutput release];
         m_pStillImageOutput = NULL;
      }
 
     if (m_pDevice) {
-        [m_pDevice release];
+        //std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
+        //[m_pDevice release];
         m_pDevice = NULL;
     }
 
     if (m_pCapture) {
-        // std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
+        //std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }
-
     [pool drain];
 
     // decrease refcount of the Python binding
@@ -328,6 +343,7 @@ CppAVFCam & CppAVFCam::operator= (CppAVFCam && other)
 void CppAVFCam::file_output_done(bool error)
 {
     // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
+    //std::cout << "file output\n" << std::endl;
 
     if (!m_pObj || !m_haveMovieCallback)
         return;
@@ -336,10 +352,13 @@ void CppAVFCam::file_output_done(bool error)
     PyObject * kwargs = Py_BuildValue("{}");
     PyObject * args = Py_BuildValue("(i)", error);
 
+    PyGILState_STATE gstate = PyGILState_Ensure();
+
     // Call a virtual overload, if it exists
     cy_call_func(m_pObj, &overridden, (char*)__func__, args, kwargs);
 
-
+    PyGILState_Release(gstate);
+    
     if (!overridden)
         m_haveMovieCallback = false;
 }
