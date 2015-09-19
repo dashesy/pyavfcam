@@ -208,8 +208,10 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-            if (sink_file)
+            if (sink_file) {
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+                m_pVideoFileOutput.minFrameDuration = CMTimeMake(1, 30);
+            }
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
             if (sink_image)
@@ -235,6 +237,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
     //        if (video_buffer_output)
     //            [m_pSession addOutput:video_buffer_output];
 
+            m_pSession.sessionPreset = AVCaptureSessionPresetMedium;
             // Start the AV session
             [m_pSession startRunning];
         }
@@ -616,6 +619,12 @@ void CppAVFCam::get_device_formats()
 {
     if (!m_pDevice)
         throw std::invalid_argument( "webcam video source not initialized" );
+
+//        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+//        for (AVCaptureDevice *device in devices) {
+//            const char *name = [[device localizedName] UTF8String];
+//            int index  = [devices indexOfObject:device];
+//        }
 
 //    for(AVCaptureDeviceFormat *vFormat in [m_pDevice formats] )
 //    {
