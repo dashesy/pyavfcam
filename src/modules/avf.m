@@ -240,20 +240,12 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
 
             if (m_pVideoFileOutput) {
                 // Set movie to 30fps by default
-                AVCaptureConnection *videoConnection = nil;
-                for (AVCaptureConnection *connection in m_pVideoFileOutput.connections) {
-                    for (AVCaptureInputPort *port in [connection inputPorts]) {
-                        if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
-                            videoConnection = connection;
-                            break;
-                        }
-                    }
-                    if (videoConnection)
-                        break;
-                }
+                AVCaptureConnection *videoConnection = [m_pVideoFileOutput connectionWithMediaType:AVMediaTypeVideo];
                 if (videoConnection) {
-                    videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
-                    videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
+                    if (videoConnection.isVideoMinFrameDurationSupported)
+                        videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
+                    if (videoConnection.isVideoMaxFrameDurationSupported)
+                        videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
                 }
             }                
         }
