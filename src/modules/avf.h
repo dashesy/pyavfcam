@@ -21,7 +21,7 @@ struct _object;
 typedef _object PyObject;
 
 struct dispatch_semaphore_s;
-typedef dispatch_semaphore_s * dispatch_semaphore_t
+typedef dispatch_semaphore_s * dispatch_semaphore_t;
 
 class CppAVFCam
 {
