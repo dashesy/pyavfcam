@@ -106,7 +106,6 @@
     //      the workaround is to use a ACWeakProxy
     // std::cout << "dealloc" << std::endl;
     [timer invalidate];
-    [timer dealloc];
     [super dealloc];
 }
 
