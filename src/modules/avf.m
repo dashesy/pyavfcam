@@ -465,7 +465,7 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             dispatch_release(m_semFile);
             m_semFile = NULL;
         }
-
+        std::cout << "block " << blocking << std::endl;
         // Request for signaling when output done
         if (blocking)
             m_semFile = dispatch_semaphore_create(0);
@@ -482,6 +482,7 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
         // Block on file output, time out in more than the expected time!
         if (m_semFile) {
             float wait = blocking + duration;
+            std::cout << " wait " << wait << std::endl;
             int err;
             while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
                 CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
@@ -489,7 +490,8 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
                 if (wait <= 0)
                     break;
             }
-
+            std::cout << "err " << err << " wait " << wait << std::endl;
+    
             dispatch_release(m_semFile);
             m_semFile = NULL;
             [m_pVideoFileOutput stopRecording];
