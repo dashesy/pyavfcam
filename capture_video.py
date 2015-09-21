@@ -56,34 +56,49 @@ if threaded:
     BaseClass = QtCore.QObject
 
 
-class Worker(BaseClass):
+    class Worker(BaseClass):
 
-    def __init__(self):
-        """run an app job in a thread
-        """
-        super(Worker, self).__init__()
+        done = QtCore.Signal()
 
-        self.t = None
-        if threaded:
+        def __init__(self, app):
+            """run an app job in a thread
+            """
+            super(Worker, self).__init__()
+
             self.t = QtCore.QThread(objectName='record_thread')
             self.moveToThread(self.t)
-            self.t.start()
             # noinspection PyUnresolvedReferences
             self.t.started.connect(self.task)
+            self.done.connect(self.t.quit)
+            self.done.connect(app.quit)
 
-    def task(self):
-        if self.t:
+            self.t.start()
+
+        def task(self):
             thread_name = QtCore.QThread.currentThread().objectName()
             print '[%s] recording' % thread_name
+            record()
+            print '[%s] done' % thread_name
+            self.done.emit()
 
-        # Open the default video source and record
-        cam = pyavfcam.AVFCam()
-        if not duration:
-            return
-        cam.record(video_name, duration=duration)
-        print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
+def record():
+    # Open the default video source and record
+    cam = pyavfcam.AVFCam()
+    if not duration:
+        return
+    cam.record(video_name, duration=duration)
+    print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
 
 
-w = Worker()
-if not threaded:
-    w.task()
+if threaded:
+    import traceback
+    app = QtCore.QCoreApplication([])
+    def excepthook(exc_type, exc_val, tracebackobj):
+        print ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj))
+        # quit on exception
+        app.quit()
+    sys.excepthook = excepthook
+    w = Worker(app)
+    sys.exit(app.exec_())
+else:
+    record()
