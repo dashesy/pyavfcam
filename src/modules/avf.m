@@ -66,7 +66,7 @@
     [super dealloc];
 }
 
--(void)keepAlive
+-(void)keepAlive:(NSTimer *)timer
 {
 
 }
@@ -470,12 +470,10 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             dispatch_release(m_semFile);
             m_semFile = NULL;
         }
-        std::cout << "cur " << CFRunLoopGetCurrent()<< "main " << CFRunLoopGetMain() << std::endl;
-
         NSTimer *timer1 = [NSTimer scheduledTimerWithTimeInterval:5 target:m_pCapture selector:@selector(keepAlive:) userInfo:nil repeats:YES];
 
-//        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
-//        dispatch_sync(queue, ^(void){
+       dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+       dispatch_sync(queue, ^(void){
 
         std::cout << "q cur " << CFRunLoopGetCurrent()<< "q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
@@ -493,25 +491,25 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
 
         // Block on file output, time out in more than the expected time!
         if (m_semFile) {
-               dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-               dispatch_semaphore_wait(m_semFile, timout);
-//             float wait = blocking + duration;
-//             std::cout << " wait " << wait << std::endl;
-//             int err;
-//             while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-//                 CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-//                 wait -= 0.05;
-//                 if (wait <= 0)
-//                     break;
-//             }
-//             std::cout << "err " << err << " wait " << wait << std::endl;
+//                dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+//                dispatch_semaphore_wait(m_semFile, timout);
+            float wait = blocking + duration;
+            std::cout << " wait " << wait << std::endl;
+            int err;
+            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+                wait -= 0.05;
+                if (wait <= 0)
+                    break;
+            }
+            std::cout << "err " << err << " wait " << wait << std::endl;
     
             dispatch_release(m_semFile);
             m_semFile = NULL;
             [m_pVideoFileOutput stopRecording];
         }
 
-//        });
+       });
     }
 
     [pool drain];
