@@ -255,6 +255,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
 CppAVFCam::~CppAVFCam()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    std::cout << "dest cur " << CFRunLoopGetCurrent()<< " dest main " << CFRunLoopGetMain() << std::endl;
     
     // BUG: AVFoundation causes segfaults if release some of these, 
     //      this is only evident if object lives in a non-main thread.
@@ -262,14 +263,15 @@ CppAVFCam::~CppAVFCam()
 
     if (m_pSession) {
         std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
-        [m_pSession stopRunning];
+//         [m_pSession stopRunning];
         // Remove the connections so the library might clean up
         for (AVCaptureInput *input1 in m_pSession.inputs)
             [m_pSession removeInput:input1];
         for (AVCaptureOutput *output1 in m_pSession.outputs)
             [m_pSession removeOutput:output1];
+        std::cout << "bob" << std::endl;
         [m_pSession stopRunning];
-        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession release];
         m_pSession = NULL;
     }
@@ -353,8 +355,8 @@ void CppAVFCam::file_output_done(bool error)
     if (m_semFile) {
         dispatch_semaphore_signal(m_semFile);
         std::cout << "file output\n" << std::endl;
-        std::cout << "f cur " << CFRunLoopGetCurrent()<< "f main " << CFRunLoopGetMain() << std::endl;
     }
+    std::cout << "f cur " << CFRunLoopGetCurrent()<< " f main " << CFRunLoopGetMain() << std::endl;
 
     if (!m_pObj || !m_haveMovieCallback)
         return;
@@ -483,7 +485,7 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
 //        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
 //        dispatch_sync(queue, ^(void){
 
-        std::cout << "q cur " << CFRunLoopGetCurrent()<< "q main " << CFRunLoopGetMain() << std::endl;
+        std::cout << "q cur " << CFRunLoopGetCurrent()<< " q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
         if (blocking)
             m_semFile = dispatch_semaphore_create(0);
