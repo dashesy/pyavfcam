@@ -60,7 +60,7 @@ if threaded:
 
         done = QtCore.Signal()
 
-        def __init__(self, app):
+        def __init__(self, _app):
             """run an app job in a thread
             """
             super(Worker, self).__init__()
@@ -70,7 +70,7 @@ if threaded:
             # noinspection PyUnresolvedReferences
             self.t.started.connect(self.task)
             self.done.connect(self.t.quit)
-            self.done.connect(app.quit)
+            self.done.connect(_app.quit)
 
             self.t.start()
 
@@ -81,6 +81,25 @@ if threaded:
             print '[%s] done' % thread_name
             self.done.emit()
 
+    import traceback
+    import signal
+    app = QtCore.QCoreApplication([])
+    # ctrl+C
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    def excepthook(exc_type, exc_val, tracebackobj):
+        print ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj))
+        # quit on exception
+        app.quit()
+    sys.excepthook = excepthook
+    timer = QtCore.QTimer()
+    timer.start(200)
+    timer.timeout.connect(lambda: None)
+
+    w = Worker(app)
+    sys.exit(app.exec_())
+
+
 def record():
     # Open the default video source and record
     cam = pyavfcam.AVFCam()
@@ -90,22 +109,5 @@ def record():
     print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
 
 
-if threaded:
-    import traceback
-    import signal
-    app = QtCore.QCoreApplication([])
-    # ctrl+C
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-    def excepthook(exc_type, exc_val, tracebackobj):
-        print ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj))
-        # quit on exception
-        app.quit()
-    sys.excepthook = excepthook
-    timer = QtCore.QTimer()
-    timer.start(200)
-    timer.timeout.connect(lambda: None)
-    
-    w = Worker(app)
-    sys.exit(app.exec_())
-else:
+if not threaded:
     record()
