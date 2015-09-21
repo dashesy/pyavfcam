@@ -58,9 +58,6 @@ if threaded:
 
 class Worker(BaseClass):
 
-    # Task done with list of bpm results
-    taskDone = QtCore.Signal(list)
-
     def __init__(self):
         """run an app job in a thread
         """
