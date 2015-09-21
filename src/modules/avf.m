@@ -14,116 +14,6 @@
 #include "camera_frame.h"
 #include "../avf_api.h"
 
-@interface TimerTarget : NSObject
-@property(weak, nonatomic) id realTarget;
-@end
-
-@implementation TimerTarget
-
-- (void)keepAlive:(NSTimer*)theTimer
-{
-    [self.realTarget performSelector:@selector(keepAlive:) withObject:theTimer];
-}
-
-@end
-
-// A basic shim that just passes things to C++ instance
-@interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
-                                         AVCaptureVideoDataOutputSampleBufferDelegate>
-{
-    CppAVFCam * m_pInstance; // What I am delegated for
-    @property(strong, nonatomic) NSTimer *timer; // Keep-alive timer
-}
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
-  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-  fromConnection:(AVCaptureConnection *)connection;
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections
-  error:(NSError *)error;
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections;
-  
-@end
-
-
-@implementation AVCaptureDelegate
-
-- (id)init
-{
-    return [self initWithInstance:NULL];
-}
-
-- (id)initWithInstance:(CppAVFCam *)pInstance
-{
-    self = [super init];
-    if(self) {
-        m_pInstance = pInstance;
-        TimerTarget *timerTarget = [[TimerTarget alloc] init];
-        timerTarget.realTarget = self;
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:1
-                              target:timerTarget
-                              selector:@selector(keepAlive:)
-                              userInfo:nil repeats:YES];
-    }
-    return self;
-}
-
-- (void)setInstance:(CppAVFCam *)pInstance
-{
-    m_pInstance = pInstance;
-}
-
--(void)dealloc
-{
-    // BUG: It seems this is not called because AVFoundation retains a strong reference of this object somewhere !!
-    //      the workaround is to use a ACWeakProxy
-    // std::cout << "dealloc" << std::endl;
-    [self.timer invalidate]; // This releases the TimerTarget as well
-    [super dealloc];
-}
-
--(void)keepAlive:(NSTimer *)timer
-{
-    // Can do some background here
-}
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
-  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-  fromConnection:(AVCaptureConnection *)connection
-{
-    if (!m_pInstance)
-        return;
-
-    CameraFrame frame(sampleBuffer);
-    m_pInstance->video_output(frame);
-
-}
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections
-  error:(NSError *)error
-{
-    if (!m_pInstance)
-        return;
-
-    m_pInstance->file_output_done(error != NULL);
-}
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections
-{
-    // We can notify
-}
-
-@end
-
 @interface ACWeakProxy : NSProxy {
     id _object;
 }
@@ -155,6 +45,104 @@
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)sel {
     return [_object methodSignatureForSelector:sel];
+}
+
+@end
+
+// A basic shim that just passes things to C++ instance
+@interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
+                                         AVCaptureVideoDataOutputSampleBufferDelegate>
+{
+    CppAVFCam * instance; // What I am delegated for
+    NSTimer *timer; // Keep-alive timer
+}
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput
+  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+  fromConnection:(AVCaptureConnection *)connection;
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+  error:(NSError *)error;
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections;
+  
+@end
+
+
+@implementation AVCaptureDelegate
+
+- (id)init
+{
+    return [self initWithInstance:NULL];
+}
+
+- (id)initWithInstance:(CppAVFCam *)pInstance
+{
+    self = [super init];
+    if(self) {
+        instance = pInstance;
+        ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
+        timer = [NSTimer scheduledTimerWithTimeInterval:1
+                         target:proxy
+                         selector:@selector(keepAlive:)
+                         userInfo:nil repeats:YES];
+        [proxy release];
+    }
+    return self;
+}
+
+- (void)setInstance:(CppAVFCam *)pInstance
+{
+    instance = pInstance;
+}
+
+-(void)dealloc
+{
+    // BUG: It seems this is not called because AVFoundation retains a strong reference of this object somewhere !!
+    //      the workaround is to use a ACWeakProxy
+    // std::cout << "dealloc" << std::endl;
+    [timer invalidate];
+    [timer dealloc];
+    [super dealloc];
+}
+
+-(void)keepAlive:(NSTimer *)timer
+{
+    // Can do some background here
+}
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput
+  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+  fromConnection:(AVCaptureConnection *)connection
+{
+    if (!instance)
+        return;
+
+    CameraFrame frame(sampleBuffer);
+    instance->video_output(frame);
+
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+  error:(NSError *)error
+{
+    if (!instance)
+        return;
+
+    instance->file_output_done(error != NULL);
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+{
+    // We can notify
 }
 
 @end
