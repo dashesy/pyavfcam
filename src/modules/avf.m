@@ -66,6 +66,11 @@
     [super dealloc];
 }
 
+-(void)keepAlive
+{
+
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   fromConnection:(AVCaptureConnection *)connection
@@ -467,9 +472,11 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
         }
         std::cout << "cur " << CFRunLoopGetCurrent()<< "main " << CFRunLoopGetMain() << std::endl;
 
-        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+        NSTimer *timer1 = [NSTimer scheduledTimerWithTimeInterval:5 target:m_pCapture selector:@selector(keepAlive:) userInfo:nil repeats:YES];
 
-        dispatch_sync(queue, ^(void){
+//        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+//        dispatch_sync(queue, ^(void){
+
         std::cout << "q cur " << CFRunLoopGetCurrent()<< "q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
         if (blocking)
@@ -503,7 +510,8 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             m_semFile = NULL;
             [m_pVideoFileOutput stopRecording];
         }
-        });
+
+//        });
     }
 
     [pool drain];
