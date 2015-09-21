@@ -83,7 +83,6 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    // BUG: It seems didFinishRecordingToOutputFileAtURL is not called if duration is given  !!
     if (!m_pInstance)
         return;
 
@@ -466,8 +465,12 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             dispatch_release(m_semFile);
             m_semFile = NULL;
         }
-        std::cout << "block " << blocking << std::endl;
         std::cout << "cur " << CFRunLoopGetCurrent()<< "main " << CFRunLoopGetMain() << std::endl;
+
+        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+
+        dispatch_sync(queue, ^(void){
+        std::cout << "q cur " << CFRunLoopGetCurrent()<< "q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
         if (blocking)
             m_semFile = dispatch_semaphore_create(0);
@@ -500,6 +503,7 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             m_semFile = NULL;
             [m_pVideoFileOutput stopRecording];
         }
+        });
     }
 
     [pool drain];
