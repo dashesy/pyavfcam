@@ -20,6 +20,9 @@ class CameraFrame;
 struct _object;
 typedef _object PyObject;
 
+struct dispatch_semaphore_s;
+typedef dispatch_semaphore_s * dispatch_semaphore_t
+
 class CppAVFCam
 {
 private:
@@ -32,6 +35,7 @@ private:
     AVCaptureStillImageOutput * m_pStillImageOutput;
 
 private:
+    dispatch_semaphore_t m_semFile;  // Semaphore for blocking file video sink
     bool m_bBlockingImage;
 
 private:
