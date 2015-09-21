@@ -14,11 +14,25 @@
 #include "camera_frame.h"
 #include "../avf_api.h"
 
+@interface TimerTarget : NSObject
+@property(weak, nonatomic) id realTarget;
+@end
+
+@implementation TimerTarget
+
+- (void)keepAlive:(NSTimer*)theTimer
+{
+    [self.realTarget performSelector:@selector(keepAlive:) withObject:theTimer];
+}
+
+@end
+
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
                                          AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     CppAVFCam * m_pInstance; // What I am delegated for
+    @property(strong, nonatomic) NSTimer *timer; // Keep-alive timer
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
@@ -49,6 +63,12 @@
     self = [super init];
     if(self) {
         m_pInstance = pInstance;
+        TimerTarget *timerTarget = [[TimerTarget alloc] init];
+        timerTarget.realTarget = self;
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:1
+                              target:timerTarget
+                              selector:@selector(keepAlive:)
+                              userInfo:nil repeats:YES];
     }
     return self;
 }
@@ -63,12 +83,13 @@
     // BUG: It seems this is not called because AVFoundation retains a strong reference of this object somewhere !!
     //      the workaround is to use a ACWeakProxy
     // std::cout << "dealloc" << std::endl;
+    [self.timer invalidate]; // This releases the TimerTarget as well
     [super dealloc];
 }
 
 -(void)keepAlive:(NSTimer *)timer
 {
-
+    // Can do some background here
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
@@ -470,7 +491,6 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             dispatch_release(m_semFile);
             m_semFile = NULL;
         }
-        NSTimer *timer1 = [NSTimer scheduledTimerWithTimeInterval:5 target:m_pCapture selector:@selector(keepAlive:) userInfo:nil repeats:YES];
 
        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
        dispatch_sync(queue, ^(void){
