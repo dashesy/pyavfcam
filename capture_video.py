@@ -92,12 +92,19 @@ def record():
 
 if threaded:
     import traceback
+    import signal
     app = QtCore.QCoreApplication([])
+    # ctrl+C
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     def excepthook(exc_type, exc_val, tracebackobj):
         print ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj))
         # quit on exception
         app.quit()
     sys.excepthook = excepthook
+    timer = QtCore.QTimer()
+    timer.start(200)
+    timer.timeout.connect(lambda: None)
+    
     w = Worker(app)
     sys.exit(app.exec_())
 else:

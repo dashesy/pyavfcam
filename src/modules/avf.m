@@ -275,31 +275,31 @@ CppAVFCam::~CppAVFCam()
     }
 
     if (m_pVideoInput) {
-        //std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
+        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
         //[m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        //std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
+        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
         //[m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
      }
 
     if (m_pStillImageOutput) {
-        //std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
+        std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
         //[m_pStillImageOutput release];
         m_pStillImageOutput = NULL;
      }
 
     if (m_pDevice) {
-        //std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
+        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
         //[m_pDevice release];
         m_pDevice = NULL;
     }
 
     if (m_pCapture) {
-        //std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
+        std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }
@@ -308,8 +308,9 @@ CppAVFCam::~CppAVFCam()
         dispatch_release(m_semFile);
         m_semFile = NULL;
     }
-
+    std::cout << " b 1" << std::endl;
     [pool drain];
+    std::cout << " b 2" << std::endl;
 
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
