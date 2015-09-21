@@ -8,6 +8,7 @@
 //
 
 #include <vector>
+#import <Foundation/Foundation.h>
 
 @class AVCaptureDevice;
 @class AVCaptureSession;
@@ -19,9 +20,6 @@
 class CameraFrame;
 struct _object;
 typedef _object PyObject;
-
-struct dispatch_semaphore_s;
-typedef dispatch_semaphore_s * dispatch_semaphore_t;
 
 class CppAVFCam
 {
