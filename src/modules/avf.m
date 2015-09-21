@@ -261,7 +261,7 @@ CppAVFCam::~CppAVFCam()
     //      potential for memory leak is annoying but I cannot find a safe way to deallocate.  
 
     if (m_pSession) {
-        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession stopRunning];
         // Remove the connections so the library might clean up
         for (AVCaptureInput *input1 in m_pSession.inputs)
@@ -479,8 +479,8 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             m_semFile = NULL;
         }
 
-       dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
-       dispatch_sync(queue, ^(void){
+//        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+//        dispatch_sync(queue, ^(void){
 
         std::cout << "q cur " << CFRunLoopGetCurrent()<< "q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
@@ -516,7 +516,7 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
             [m_pVideoFileOutput stopRecording];
         }
 
-       });
+//        });
     }
 
     [pool drain];
