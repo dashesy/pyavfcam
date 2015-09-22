@@ -209,6 +209,8 @@
 // Thread life
 - (void)runThread
 {
+    m_semEnd = dispatch_semaphore_create(0);
+
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
@@ -267,12 +269,16 @@
     }
 
     [pool drain];
+
+    if (m_semEnd)
+        dispatch_semaphore_signal(m_semEnd);
 }
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
 {
     self = [super init];
     if(self) {
+        m_semEnd = nil;
         m_semFile = nil;
         m_instance = pInstance;
 
@@ -313,6 +319,14 @@
     std::cout << "stopThread 2" << std::endl;
     // Make sure I stop
     CFRunLoopStop(CFRunLoopGetCurrent());
+
+    // grace period
+    if (m_semEnd) {
+        dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC );
+        dispatch_semaphore_wait(m_semEnd, timout);
+        dispatch_release(m_semFile);
+        m_semFile = nil;
+    }
     std::cout << "stopThread 3" << std::endl;
 }
 
@@ -321,14 +335,15 @@
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
+    if (m_thread) {
+        [self performSelector:@selector(stopThread)
+                     onThread:m_thread
+                   withObject:nil
+                waitUntilDone:YES];
 
-    [self performSelector:@selector(stopThread)
-                 onThread:m_thread
-               withObject:nil
-            waitUntilDone:YES];
-
-    [m_thread release];
-    m_thread = nil;
+        [m_thread release];
+        m_thread = nil;
+    }
 
     [pool release];
 
