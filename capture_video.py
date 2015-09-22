@@ -41,6 +41,14 @@ if video_name is None:
     raise ValueError('capture_video.py <video_name> [-duration <seconds>]')
 
 
+def record():
+    # Open the default video source and record
+    cam = pyavfcam.AVFCam()
+    if not duration:
+        return
+    cam.record(video_name, duration=duration)
+    print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
+
 if threaded:
     try:
         # noinspection PyPackageRequirements
@@ -95,15 +103,6 @@ if threaded:
 
     w = Worker(app)
     sys.exit(app.exec_())
-
-
-def record():
-    # Open the default video source and record
-    cam = pyavfcam.AVFCam()
-    if not duration:
-        return
-    cam.record(video_name, duration=duration)
-    print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
 
 
 if not threaded:
