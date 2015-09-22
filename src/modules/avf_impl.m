@@ -128,7 +128,7 @@
 //        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
 //        dispatch_sync(queue, ^(void){
 
-    std::cout << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
+    std::cout << " recording cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
 
     if (blocking)
         m_semFile = dispatch_semaphore_create(0);
@@ -307,10 +307,13 @@
 
 - (void)stopThread
 {
+    std::cout << "stopThread" << std::endl;
     // this should darin the runloop
     [m_timer invalidate];
+    std::cout << "stopThread 2" << std::endl;
     // Make sure I stop
     CFRunLoopStop(CFRunLoopGetCurrent());
+    std::cout << "stopThread 3" << std::endl;
 }
 
 // Destructor
@@ -321,8 +324,8 @@
 
     [self performSelector:@selector(stopThread)
                  onThread:m_thread
-               withObject:self
-            waitUntilDone:NO];
+               withObject:nil
+            waitUntilDone:YES];
 
     [m_thread release];
     m_thread = nil;

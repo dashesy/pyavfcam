@@ -79,10 +79,9 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
 CppAVFCam::~CppAVFCam()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    std::cout << "dest cur " << CFRunLoopGetCurrent()<< " dest main " << CFRunLoopGetMain() << std::endl;
-    
 
     if (m_pCapture) {
+        std::cout << "dest cur " << CFRunLoopGetCurrent()<< " dest main " << CFRunLoopGetMain() << std::endl;
         std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
@@ -126,7 +125,7 @@ void CppAVFCam::file_output_done(bool error)
 {
     // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
 
-    std::cout << "file output" << " cur " << CFRunLoopGetCurrent()<< " f main " << CFRunLoopGetMain() << std::endl;
+    std::cout << "file output" << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
 
     if (!m_pObj || !m_haveMovieCallback)
         return;
