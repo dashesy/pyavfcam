@@ -93,7 +93,7 @@ CppAVFCam::~CppAVFCam()
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
-    std::cout << " deconst end " << std::endl;
+    std::cout << " dest end " << std::endl;
 }
 
 // Move assignment operator

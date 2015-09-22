@@ -14,7 +14,8 @@ class CppAVFCam;
 {
     CppAVFCam * instance; // What I am delegated for
     NSTimer *timer; // Keep-alive timer
-    dispatch_semaphore_t semFile;
+    dispatch_semaphore_t semFile; // used to signal when file recording is done
+    NSThread *mThread; // thread to have dedicated runloop
 
 @public
     AVCaptureSession * m_pSession;

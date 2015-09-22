@@ -206,46 +206,25 @@
     return [self initWithInstance:NULL];
 }
 
-- (id)initWithInstance:(CppAVFCam *)pInstance
+// Thread life
+- (void)runThread
 {
-    self = [super init];
-    if(self) {
-        semFile = nil;
-        instance = pInstance;
-        ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
-        timer = [NSTimer scheduledTimerWithTimeInterval:1
-                         target:proxy
-                         selector:@selector(keepAlive:)
-                         userInfo:nil repeats:YES];
-        [proxy release];
+    NSAutoReleasePool *pool = [[NSAutoReleasePool alloc] init];
 
-        m_pSession = nil;
-        m_pDevice = nil;
-        m_pVideoInput = nil;
-        m_pVideoFileOutput = nil;
-        m_pStillImageOutput = nil;
+    ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
+    timer = [NSTimer scheduledTimerWithTimeInterval:1
+                     target:proxy
+                     selector:@selector(keepAlive:)
+                     userInfo:nil repeats:YES];
+    [proxy release];
 
-        // Actually go on and create the session
-        [self createSession];
-    }
-    return self;
-}
+    // Actually go on and create the session but in this thread
+    [self createSession];
 
-// Change the c++ instance I am delegated to
-- (void)setInstance:(CppAVFCam *)pInstance
-{
-    instance = pInstance;
-}
-
-// Destructor
--(void)dealloc
-{
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-
-    // BUG: It seems this is not called if AVFoundation retains a strong reference of this object somewhere !!
-    //      the workaround is to use a ACWeakProxy
-
-    [timer invalidate];
+    std::cout << "before thread cur " << CFRunLoopGetCurrent() << std::endl;
+    // Start the run loop
+    CFRunLoopRun();
+    std::cout << "after thread cur " << CFRunLoopGetCurrent() << std::endl;
 
     // BUG: AVFoundation causes segfaults if release some of these,
     //      this is only evident if object lives in a non-main thread.
@@ -289,6 +268,46 @@
         //[m_pDevice release];
         m_pDevice = NULL;
     }
+
+    [pool drain];
+}
+
+- (id)initWithInstance:(CppAVFCam *)pInstance
+{
+    self = [super init];
+    if(self) {
+        semFile = nil;
+        instance = pInstance;
+
+        timer = nil;
+        m_pSession = nil;
+        m_pDevice = nil;
+        m_pVideoInput = nil;
+        m_pVideoFileOutput = nil;
+        m_pStillImageOutput = nil;
+        mThread = nil;
+
+        mThread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
+    }
+    return self;
+}
+
+// Change the c++ instance I am delegated to
+- (void)setInstance:(CppAVFCam *)pInstance
+{
+    instance = pInstance;
+}
+
+// Destructor
+-(void)dealloc
+{
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
+    // BUG: It seems this is not called if AVFoundation retains a strong reference of this object somewhere !!
+    //      the workaround is to use a ACWeakProxy
+
+    // this should darin the runloop
+    [timer invalidate];
 
     [pool release];
 
