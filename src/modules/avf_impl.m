@@ -209,7 +209,7 @@
 // Thread life
 - (void)runThread
 {
-    NSAutoReleasePool *pool = [[NSAutoReleasePool alloc] init];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
     timer = [NSTimer scheduledTimerWithTimeInterval:1
