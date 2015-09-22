@@ -181,6 +181,7 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
             Py_XINCREF(m_pObj);
         }
     }
+    std::cout << "const cur " << CFRunLoopGetCurrent()<< " const main " << CFRunLoopGetMain() << std::endl;
 
     // Connect this class with NSObject
     m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
