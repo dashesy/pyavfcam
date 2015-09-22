@@ -233,12 +233,13 @@
         std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
 //         [m_pSession stopRunning];
         // Remove the connections so the library might clean up
-        for (AVCaptureInput *input1 in m_pSession.inputs)
-            [m_pSession removeInput:input1];
-        for (AVCaptureOutput *output1 in m_pSession.outputs)
-            [m_pSession removeOutput:output1];
-        std::cout << "bob" << std::endl;
-        [m_pSession stopRunning];
+//         for (AVCaptureInput *input1 in m_pSession.inputs)
+//             [m_pSession removeInput:input1];
+//         for (AVCaptureOutput *output1 in m_pSession.outputs)
+//             [m_pSession removeOutput:output1];
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        if (m_pSession.isRunning)
+            [m_pSession stopRunning];
         std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         [m_pSession release];
         m_pSession = NULL;
