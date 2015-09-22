@@ -191,12 +191,14 @@
 
 - (void)startRecordingWithDict:(NSDictionary*) params
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSURL* url = [params objectForKey:@"url"];
-    float duration = [params objectForKey:@"duration"].floatValue;
-    unsigned int blocking = [params objectForKey:@"blocking"].unsignedIntValue;
+    float duration = [[params objectForKey:@"duration"] floatValue];
+    unsigned int blocking = [[params objectForKey:@"blocking"] unsignedIntValue];
     [self _startRecordingToOutputFileURL:url
-                            withDuration:duration withBlocking
+                            withDuration:duration
                             withBlocking:blocking];
+    [pool release];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
