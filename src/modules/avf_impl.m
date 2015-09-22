@@ -137,7 +137,7 @@
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
     // Start recordign the video and let me know when it is done
-    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureFileOutputRecordingDelegate *)proxy];
+    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
     [proxy release];
 
     // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
