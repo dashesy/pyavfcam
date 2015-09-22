@@ -287,6 +287,7 @@
         m_pStillImageOutput = nil;
 
         m_thread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
+        [m_thread start];
     }
     return self;
 }
