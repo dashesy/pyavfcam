@@ -26,13 +26,12 @@ private:
     PyObject * m_pObj;  // Python binding
     AVCaptureSession * m_pSession;
     AVCaptureDevice * m_pDevice;              // Camera device
-    AVCaptureDelegate * m_pCapture;           // Capture delegate
+    AVCaptureDelegate * m_pCapture;           // Capture delegate (pImpl)
     AVCaptureDeviceInput * m_pVideoInput;
     AVCaptureMovieFileOutput * m_pVideoFileOutput;
     AVCaptureStillImageOutput * m_pStillImageOutput;
 
 private:
-    dispatch_semaphore_t m_semFile;  // Semaphore for blocking file video sink
     bool m_bBlockingImage;
 
 private:

@@ -12,42 +12,9 @@
 #include <cmath>
 #include "avf.h"
 #include "camera_frame.h"
+#include "utils.h"
 #include "../avf_api.h"
 
-@interface ACWeakProxy : NSProxy {
-    id _object;
-}
-
-@property(assign) id object;
-
-- (id)initWithObject:(id)object;
-
-@end
-
-@implementation ACWeakProxy
-
-@synthesize object = _object;
-
-- (id)initWithObject:(id)object {
-    // no init method in superclass
-    _object = object;
-    return self;
-}
-
-- (BOOL)isKindOfClass:(Class)aClass {
-    return [super isKindOfClass:aClass] || [_object isKindOfClass:aClass];
-}
-
-- (void)forwardInvocation:(NSInvocation *)invocation {
-    [invocation setTarget:_object];
-    [invocation invoke];
-}
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel {
-    return [_object methodSignatureForSelector:sel];
-}
-
-@end
 
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
@@ -151,7 +118,7 @@ CppAVFCam::CppAVFCam()
     : m_pObj(NULL),
       m_pSession(NULL), m_pDevice(NULL), m_pCapture(NULL),
       m_pVideoInput(NULL), m_pVideoFileOutput(NULL), m_pStillImageOutput(NULL),
-      m_semFile(NULL), m_bBlockingImage(false),
+      m_bBlockingImage(false),
       m_videoFrameCount(0), m_imageFrameCount(0),
       m_haveImageCallback(true), m_haveVideoCallback(true), m_haveMovieCallback(true)
 {
@@ -307,10 +274,6 @@ CppAVFCam::~CppAVFCam()
         m_pCapture = NULL;
     }
 
-    if (m_semFile) {
-        dispatch_release(m_semFile);
-        m_semFile = NULL;
-    }
     std::cout << " b 1" << std::endl;
     [pool drain];
     std::cout << " b 2" << std::endl;
@@ -353,10 +316,7 @@ void CppAVFCam::file_output_done(bool error)
 {
     // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
 
-    if (m_semFile) {
-        dispatch_semaphore_signal(m_semFile);
-        std::cout << "file output\n" << std::endl;
-    }
+    std::cout << "file output\n" << std::endl;
     std::cout << "f cur " << CFRunLoopGetCurrent()<< " f main " << CFRunLoopGetMain() << std::endl;
 
     if (!m_pObj || !m_haveMovieCallback)
@@ -478,18 +438,18 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
         if (!no_duration)
             [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
 
-        if (m_semFile) {
-            dispatch_release(m_semFile);
-            m_semFile = NULL;
-        }
+//        if (m_semFile) {
+//            dispatch_release(m_semFile);
+//            m_semFile = NULL;
+//        }
 
 //        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
 //        dispatch_sync(queue, ^(void){
 
         std::cout << "q cur " << CFRunLoopGetCurrent()<< " q main " << CFRunLoopGetMain() << std::endl;
         // Request for signaling when output done
-        if (blocking)
-            m_semFile = dispatch_semaphore_create(0);
+//        if (blocking)
+//            m_semFile = dispatch_semaphore_create(0);
 
         // BUG: ref count of m_pCapture is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
         //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
@@ -501,24 +461,24 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
         // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
 
         // Block on file output, time out in more than the expected time!
-        if (m_semFile) {
-//                dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-//                dispatch_semaphore_wait(m_semFile, timout);
-            float wait = blocking + duration;
-            std::cout << " wait " << wait << std::endl;
-            int err;
-            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-                wait -= 0.05;
-                if (wait <= 0)
-                    break;
-            }
-            std::cout << "err " << err << " wait " << wait << std::endl;
-    
-            dispatch_release(m_semFile);
-            m_semFile = NULL;
-            [m_pVideoFileOutput stopRecording];
-        }
+//        if (m_semFile) {
+////                dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+////                dispatch_semaphore_wait(m_semFile, timout);
+//            float wait = blocking + duration;
+//            std::cout << " wait " << wait << std::endl;
+//            int err;
+//            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+//                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+//                wait -= 0.05;
+//                if (wait <= 0)
+//                    break;
+//            }
+//            std::cout << "err " << err << " wait " << wait << std::endl;
+//
+//            dispatch_release(m_semFile);
+//            m_semFile = NULL;
+//            [m_pVideoFileOutput stopRecording];
+//        }
 
 //        });
     }
