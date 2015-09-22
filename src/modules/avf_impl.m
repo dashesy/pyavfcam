@@ -303,7 +303,7 @@
     // this should darin the runloop
     [m_timer invalidate];
     // Make sure I stop
-    CRunLoopStop(CFRunLoopGetCurrent())
+    CRunLoopStop(CFRunLoopGetCurrent());
 }
 
 // Destructor
