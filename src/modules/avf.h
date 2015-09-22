@@ -8,6 +8,7 @@
 //
 
 #include <vector>
+#include <string>
 
 @class AVCaptureDelegate;
 
