@@ -8,7 +8,6 @@
 //
 
 #include <vector>
-#import <Foundation/Foundation.h>
 
 @class AVCaptureDevice;
 @class AVCaptureSession;

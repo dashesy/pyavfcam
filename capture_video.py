@@ -41,7 +41,6 @@ if video_name is None:
     raise ValueError('capture_video.py <video_name> [-duration <seconds>]')
 
 
-BaseClass = object
 if threaded:
     try:
         # noinspection PyPackageRequirements
@@ -53,10 +52,8 @@ if threaded:
         QtCore.Signal = QtCore.pyqtSignal
         # noinspection PyUnresolvedReferences
         QtCore.Slot = QtCore.pyqtSlot
-    BaseClass = QtCore.QObject
 
-
-    class Worker(BaseClass):
+    class Worker(QtCore.QObject):
 
         done = QtCore.Signal()
 
