@@ -9,12 +9,7 @@
 
 #include <vector>
 
-@class AVCaptureDevice;
-@class AVCaptureSession;
 @class AVCaptureDelegate;
-@class AVCaptureDeviceInput;
-@class AVCaptureStillImageOutput;
-@class AVCaptureMovieFileOutput;
 
 class CameraFrame;
 struct _object;
@@ -23,13 +18,9 @@ typedef _object PyObject;
 class CppAVFCam
 {
 private:
-    PyObject * m_pObj;  // Python binding
-    AVCaptureSession * m_pSession;
-    AVCaptureDevice * m_pDevice;              // Camera device
-    AVCaptureDelegate * m_pCapture;           // Capture delegate (pImpl)
-    AVCaptureDeviceInput * m_pVideoInput;
-    AVCaptureMovieFileOutput * m_pVideoFileOutput;
-    AVCaptureStillImageOutput * m_pStillImageOutput;
+    PyObject * m_pObj;               // Python binding
+    bool m_sink_file, m_sink_callback, m_sink_image; // video sinks
+    AVCaptureDelegate * m_pCapture;  // Capture delegate (pImpl for ObjC bits)
 
 private:
     bool m_bBlockingImage;
