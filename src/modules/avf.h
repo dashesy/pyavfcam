@@ -36,6 +36,12 @@ public:
     virtual PyObject * image_output(CameraFrame &frame);
 
 public:
+    // simple accessors
+    bool isSinkFileSet() {return m_sink_file;}
+    bool isSinkCallbackSet() {return m_sink_callback;}
+    bool isSinkImageSet() {return m_sink_image;}
+
+public:
 
     CppAVFCam();
     CppAVFCam(bool sink_file, bool sink_callback, bool sink_image,

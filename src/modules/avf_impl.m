@@ -66,11 +66,11 @@
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-            if (instance->m_sink_file)
+            if (instance->isSinkFileSet())
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-            if (instance->m_sink_image)
+            if (instance->isSinkImageSet())
                 m_pStillImageOutput = [[AVCaptureStillImageOutput alloc] init];
 
             if (m_pStillImageOutput) {
@@ -137,7 +137,7 @@
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
     // Start recordign the video and let me know when it is done
-    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:proxy];
+    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureFileOutputRecordingDelegate *)proxy];
     [proxy release];
 
     // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
