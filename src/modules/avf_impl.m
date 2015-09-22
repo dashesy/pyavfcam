@@ -332,13 +332,14 @@
                 
         // grace period
         if (m_semEnd) {
-            dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC );
+            int seconds = 4;
+            dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, seconds * NSEC_PER_SEC );
             int err = dispatch_semaphore_wait(m_semEnd, timout);
             if (err == 0) {
                 dispatch_release(m_semEnd);
                 m_semEnd = nil;
             } else {
-                std::cerr << "media thread did not finish on time!" << std::endl;
+                std::cerr << "media thread killed after not responding in " << seconds << " seconds!" << std::endl;
             }
         }
 
