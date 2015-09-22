@@ -112,7 +112,7 @@
     [pool drain];
 }
 
-- (void)startRecordingToOutputFileURL:(NSURL *)url
+- (void)_startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking
 {
@@ -166,6 +166,35 @@
     }
 
 //        });
+}
+
+// start recording in the correct thread
+- (void)startRecordingToOutputFileURL:(NSURL *)url
+  withDuration:(float)duration
+  withBlocking:(unsigned int)blocking
+{
+    if (!m_thread)
+        return [self _startRecordingToOutputFileURL:url
+                                       withDuration:duration withBlocking
+                                       withBlocking:blocking];
+    [self performSelector:@selector(startRecordingWithDict:)
+                 onThread:m_thread
+               withObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                        @"url", url,
+                                        @"duration", duration,
+                                        @"blocking", blocking,
+                                        nil]
+            waitUntilDone:YES];
+}
+
+- (void)startRecordingWithDict:(NSDictionary*) params
+{
+    NSURL* url = [params objectForKey:@"url"];
+    float duration = [params objectForKey:@"duration"];
+    unsigned int blocking = [params objectForKey:@"blocking"];
+    [self _startRecordingToOutputFileURL:url
+                            withDuration:duration withBlocking
+                            withBlocking:blocking];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput

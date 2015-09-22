@@ -18,6 +18,7 @@ class CppAVFCam;
     dispatch_semaphore_t m_semEnd; // used to know when thread ends
     NSThread *m_thread; // thread to have dedicated runloop
 
+// Make thes public just for quick checks in avf.m
 @public
     AVCaptureSession * m_pSession;
     AVCaptureDevice * m_pDevice;              // Camera device
