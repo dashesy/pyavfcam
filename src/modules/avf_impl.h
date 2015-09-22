@@ -12,10 +12,10 @@ class CppAVFCam;
 @interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
                                          AVCaptureVideoDataOutputSampleBufferDelegate>
 {
-    CppAVFCam * instance; // What I am delegated for
-    NSTimer *timer; // Keep-alive timer
-    dispatch_semaphore_t semFile; // used to signal when file recording is done
-    NSThread *mThread; // thread to have dedicated runloop
+    CppAVFCam * m_instance; // What I am delegated for
+    NSTimer *m_timer; // Keep-alive timer
+    dispatch_semaphore_t m_semFile; // used to signal when file recording is done
+    NSThread *m_thread; // thread to have dedicated runloop
 
 @public
     AVCaptureSession * m_pSession;

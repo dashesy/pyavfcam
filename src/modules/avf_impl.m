@@ -66,11 +66,11 @@
             m_pVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:m_pDevice error:&error];
             if (m_pVideoInput)
                 [m_pSession addInput:m_pVideoInput];
-            if (instance->isSinkFileSet())
+            if (m_instance->isSinkFileSet())
                 m_pVideoFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             if (m_pVideoFileOutput)
                 [m_pSession addOutput:m_pVideoFileOutput];
-            if (instance->isSinkImageSet())
+            if (m_instance->isSinkImageSet())
                 m_pStillImageOutput = [[AVCaptureStillImageOutput alloc] init];
 
             if (m_pStillImageOutput) {
@@ -82,7 +82,7 @@
 
                 [m_pStillImageOutput setOutputSettings:outputSettings];
             }
-    //        if (instance->m_sink_callback) {
+    //        if (m_instance->m_sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
     //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
     //            [video_buffer_output setSampleBufferDelegate:self queue:videoQueue];
@@ -120,9 +120,9 @@
     if (duration > 0)
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
 
-    if (semFile) {
-        dispatch_release(semFile);
-        semFile = nil;
+    if (m_semFile) {
+        dispatch_release(m_semFile);
+        m_semFile = nil;
     }
 
 //        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
@@ -131,9 +131,9 @@
     std::cout << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
 
     if (blocking)
-        semFile = dispatch_semaphore_create(0);
+        m_semFile = dispatch_semaphore_create(0);
 
-    // BUG: ref count of m_pCapture is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
+    // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
     // Start recordign the video and let me know when it is done
@@ -143,14 +143,14 @@
     // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
 
     // Block on file output, time out in more than the expected time!
-    if (semFile) {
+    if (m_semFile) {
         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-        dispatch_semaphore_wait(semFile, timout);
+        dispatch_semaphore_wait(m_semFile, timout);
 //        float wait = blocking + duration;
 //        std::cout << " wait " << wait << std::endl;
 //        int err;
-//        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+//        while ((err = dispatch_semaphore_wait(m_m_semFile, DISPATCH_TIME_NOW))) {
 //            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
 //            wait -= 0.05;
 //            if (wait <= 0)
@@ -158,8 +158,8 @@
 //        }
 //        std::cout << "err " << err << " wait " << wait << std::endl;
 //
-        dispatch_release(semFile);
-        semFile = NULL;
+        dispatch_release(m_semFile);
+        m_semFile = NULL;
 
         // Manually stop recording
         [m_pVideoFileOutput stopRecording];
@@ -172,11 +172,11 @@
   didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
   fromConnection:(AVCaptureConnection *)connection
 {
-    if (!instance)
+    if (!m_instance)
         return;
 
     CameraFrame frame(sampleBuffer);
-    instance->video_output(frame);
+    m_instance->video_output(frame);
 
 }
 
@@ -185,13 +185,13 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    if (semFile)
-        dispatch_semaphore_signal(semFile);
+    if (m_semFile)
+        dispatch_semaphore_signal(m_semFile);
 
-    if (!instance)
+    if (!m_instance)
         return;
 
-    instance->file_output_done(error != NULL);
+    m_instance->file_output_done(error != NULL);
 }
 
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput
@@ -212,10 +212,10 @@
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
-    timer = [NSTimer scheduledTimerWithTimeInterval:1
-                     target:proxy
-                     selector:@selector(keepAlive:)
-                     userInfo:nil repeats:YES];
+    m_timer = [NSTimer scheduledTimerWithTimeInterval:1
+                                               target:proxy
+                                             selector:@selector(keepAlive:)
+                                             userInfo:nil repeats:YES];
     [proxy release];
 
     // Actually go on and create the session but in this thread
@@ -276,18 +276,17 @@
 {
     self = [super init];
     if(self) {
-        semFile = nil;
-        instance = pInstance;
+        m_semFile = nil;
+        m_instance = pInstance;
 
-        timer = nil;
+        m_timer = nil;
         m_pSession = nil;
         m_pDevice = nil;
         m_pVideoInput = nil;
         m_pVideoFileOutput = nil;
         m_pStillImageOutput = nil;
-        mThread = nil;
 
-        mThread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
+        m_thread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
     }
     return self;
 }
@@ -295,7 +294,15 @@
 // Change the c++ instance I am delegated to
 - (void)setInstance:(CppAVFCam *)pInstance
 {
-    instance = pInstance;
+    m_instance = pInstance;
+}
+
+- (void)stopThread
+{
+    // this should darin the runloop
+    [m_timer invalidate];
+    // Make sure I stop
+    CRunLoopStop(CFRunLoopGetCurrent())
 }
 
 // Destructor
@@ -303,11 +310,14 @@
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    // BUG: It seems this is not called if AVFoundation retains a strong reference of this object somewhere !!
-    //      the workaround is to use a ACWeakProxy
 
-    // this should darin the runloop
-    [timer invalidate];
+    [self performSelector:@selector(stopThread)
+                 onThread:m_thread
+               withObject:self
+            waitUntilDone:NO];
+
+    [m_thread release];
+    m_thread = nil;
 
     [pool release];
 

@@ -246,8 +246,8 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
         file_error = nil;
         [m_pCapture startRecordingToOutputFileURL:url
-                    withDuration:duration
-                    withBlocking:blocking];
+                                     withDuration:duration
+                                     withBlocking:blocking];
     }
 
     [pool drain];
