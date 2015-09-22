@@ -313,21 +313,10 @@
 
 - (void)stopThread
 {
-    std::cout << "stopThread" << std::endl;
     // this should darin the runloop
     [m_timer invalidate];
-    std::cout << "stopThread 2" << std::endl;
     // Make sure I stop
     CFRunLoopStop(CFRunLoopGetCurrent());
-
-    // grace period
-    if (m_semEnd) {
-        dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC );
-        dispatch_semaphore_wait(m_semEnd, timout);
-        dispatch_release(m_semFile);
-        m_semFile = nil;
-    }
-    std::cout << "stopThread 3" << std::endl;
 }
 
 // Destructor
@@ -340,6 +329,18 @@
                      onThread:m_thread
                    withObject:nil
                 waitUntilDone:YES];
+                
+        // grace period
+        if (m_semEnd) {
+            dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC );
+            int err = dispatch_semaphore_wait(m_semEnd, timout);
+            if (err == 0) {
+                dispatch_release(m_semEnd);
+                m_semEnd = nil;
+            } else {
+                std::cerr << "media thread did not finish on time!" << std::endl;
+            }
+        }
 
         [m_thread release];
         m_thread = nil;
