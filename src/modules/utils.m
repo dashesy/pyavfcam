@@ -40,29 +40,3 @@ std::string str_tolower(std::string const & data)
 
     return lower;
 }
-
-
-@implementation ACWeakProxy
-
-@synthesize object = _object;
-
-- (id)initWithObject:(id)object {
-    // no init method in superclass
-    _object = object;
-    return self;
-}
-
-- (BOOL)isKindOfClass:(Class)aClass {
-    return [super isKindOfClass:aClass] || [_object isKindOfClass:aClass];
-}
-
-- (void)forwardInvocation:(NSInvocation *)invocation {
-    [invocation setTarget:_object];
-    [invocation invoke];
-}
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel {
-    return [_object methodSignatureForSelector:sel];
-}
-
-@end

@@ -3,10 +3,47 @@
 //
 // 2015 dashesy
 
+#include <iostream>
+
 #include "avf_impl.h"
 #include "avf.h"
 #include "camera_frame.h"
 #include "util.h"
+
+@interface ACWeakProxy : NSProxy {
+    id _object;
+}
+
+@property(assign) id object;
+
+- (id)initWithObject:(id)object;
+
+@end
+
+@implementation ACWeakProxy
+
+@synthesize object = _object;
+
+- (id)initWithObject:(id)object {
+    // no init method in superclass
+    _object = object;
+    return self;
+}
+
+- (BOOL)isKindOfClass:(Class)aClass {
+    return [super isKindOfClass:aClass] || [_object isKindOfClass:aClass];
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation {
+    [invocation setTarget:_object];
+    [invocation invoke];
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel {
+    return [_object methodSignatureForSelector:sel];
+}
+
+@end
 
 @implementation AVCaptureDelegate
 
@@ -17,7 +54,7 @@
 }
 
 // Constructor delegate
--(void)createSession:
+-(void)createSession
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -75,7 +112,7 @@
     [pool drain];
 }
 
-- (void)startRecordingToOutputFileURL:(NSURL *)outputFileURL
+- (void)startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking
 {
