@@ -223,6 +223,9 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
         duration = 1;
 
     bool no_duration = (duration == std::numeric_limits<float>::infinity() || std::isnan(duration));
+    if (no_duration)
+        duration = 0;
+
     if (no_duration && blocking) {
         std::cerr << "blocking non-stop recording turned into non-blocking!" << std::endl;
         blocking = 0;
@@ -242,53 +245,6 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
         file_error = nil;
 
-        // Set the duration of the video, pretend fps is 600, be a nice sheep
-        if (!no_duration)
-            [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
-
-//        if (m_semFile) {
-//            dispatch_release(m_semFile);
-//            m_semFile = NULL;
-//        }
-
-//        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
-//        dispatch_sync(queue, ^(void){
-
-        std::cout << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
-        // Request for signaling when output done
-//        if (blocking)
-//            m_semFile = dispatch_semaphore_create(0);
-
-        // BUG: ref count of m_pCapture is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
-        //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
-        ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:m_pCapture];
-        // Start recordign the video and let me know when it is done
-        [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:proxy];
-        [proxy release];
-
-        // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
-
-        // Block on file output, time out in more than the expected time!
-//        if (m_semFile) {
-////                dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-////                dispatch_semaphore_wait(m_semFile, timout);
-//            float wait = blocking + duration;
-//            std::cout << " wait " << wait << std::endl;
-//            int err;
-//            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-//                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-//                wait -= 0.05;
-//                if (wait <= 0)
-//                    break;
-//            }
-//            std::cout << "err " << err << " wait " << wait << std::endl;
-//
-//            dispatch_release(m_semFile);
-//            m_semFile = NULL;
-//            [m_pVideoFileOutput stopRecording];
-//        }
-
-//        });
     }
 
     [pool drain];
@@ -411,10 +367,10 @@ PyObject * CppAVFCam::snap_picture(std::string path, unsigned int blocking,
 //    if (!videoConnection)
 //        throw std::runtime_error( "connection error" );
 //
-//    if (pObj == NULL) {
-//        Py_INCREF(Py_None);
-//        pObj = Py_None;
-//    }
+    if (pObj == NULL) {
+        Py_INCREF(Py_None);
+        pObj = Py_None;
+    }
     return pObj;
 }
 
