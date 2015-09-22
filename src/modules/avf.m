@@ -11,6 +11,7 @@
 #include <limits>
 #include <cmath>
 #include "avf.h"
+#include "avf_impl.h"
 #include "camera_frame.h"
 #include "utils.h"
 #include "../avf_api.h"
