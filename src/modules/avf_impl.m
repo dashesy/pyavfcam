@@ -178,13 +178,14 @@
                                        withDuration:duration
                                        withBlocking:blocking];
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSDictionary * params = [NSDictionary dictionaryWithObjectsAndKeys:
+                                        url, @"url",
+                                        [NSNumber numberWithFloat:duration], @"duration",
+                                        [NSNumber numberWithUnsignedInt:blocking], @"blocking",
+                                        nil];
     [self performSelector:@selector(startRecordingWithDict:)
                  onThread:m_thread
-               withObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                        @"url", url,
-                                        @"duration", [NSNumber numberWithFloat:duration],
-                                        @"blocking", [NSNumber numberWithUnsignedInt:blocking],
-                                        nil]
+               withObject:params
             waitUntilDone:YES];
     [pool release];
 }
