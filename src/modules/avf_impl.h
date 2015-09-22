@@ -2,10 +2,6 @@
 // Simple video capture in OSX using AVFoundation
 //
 // 2015 dashesy
-//--------------------------------------------------------------
-//
-// Keep the resemblence of a pure C++ header as much as possible
-//
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
@@ -18,6 +14,7 @@ class CppAVFCam;
 {
     CppAVFCam * instance; // What I am delegated for
     NSTimer *timer; // Keep-alive timer
+    dispatch_semaphore_t semFile;
 
 @public
     AVCaptureSession * m_pSession;
@@ -26,6 +23,10 @@ class CppAVFCam;
     AVCaptureMovieFileOutput * m_pVideoFileOutput;
     AVCaptureStillImageOutput * m_pStillImageOutput;
 }
+
+- (void)startRecordingToOutputFileURL:(NSURL *)url
+  withDuration:(float)duration
+  withBlocking:(unsigned int)blocking
 
 - (void)setInstance:(CppAVFCam *)pInstance;
 - (id)initWithInstance:(CppAVFCam *)pInstance;
