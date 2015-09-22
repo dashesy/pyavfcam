@@ -177,21 +177,23 @@
         return [self _startRecordingToOutputFileURL:url
                                        withDuration:duration withBlocking
                                        withBlocking:blocking];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelector:@selector(startRecordingWithDict:)
                  onThread:m_thread
                withObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                         @"url", url,
-                                        @"duration", duration,
-                                        @"blocking", blocking,
+                                        @"duration", [NSNumber numberWithFloat:duration];,
+                                        @"blocking", [NSNumber numberWithUnsignedInt:blocking];,
                                         nil]
             waitUntilDone:YES];
+    [pool release];
 }
 
 - (void)startRecordingWithDict:(NSDictionary*) params
 {
     NSURL* url = [params objectForKey:@"url"];
-    float duration = [params objectForKey:@"duration"];
-    unsigned int blocking = [params objectForKey:@"blocking"];
+    float duration = [params objectForKey:@"duration"].floatValue;
+    unsigned int blocking = [params objectForKey:@"blocking"].unsignedIntValue;
     [self _startRecordingToOutputFileURL:url
                             withDuration:duration withBlocking
                             withBlocking:blocking];
