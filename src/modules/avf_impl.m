@@ -218,9 +218,6 @@
                                              userInfo:nil repeats:YES];
     [proxy release];
 
-    // Actually go on and create the session but in this thread
-    [self createSession];
-
     std::cout << "before thread cur " << CFRunLoopGetCurrent() << std::endl;
     // Start the run loop
     CFRunLoopRun();
@@ -288,6 +285,13 @@
 
         m_thread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
         [m_thread start];
+
+        // Actually go on and create the session but in the thread
+        [self performSelector:@selector(createSession)
+                     onThread:m_thread
+                   withObject:nil
+                waitUntilDone:YES];
+
     }
     return self;
 }
