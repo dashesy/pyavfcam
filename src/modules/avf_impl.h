@@ -26,7 +26,7 @@ class CppAVFCam;
 
 - (void)startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
-  withBlocking:(unsigned int)blocking
+  withBlocking:(unsigned int)blocking;
 
 - (void)setInstance:(CppAVFCam *)pInstance;
 - (id)initWithInstance:(CppAVFCam *)pInstance;

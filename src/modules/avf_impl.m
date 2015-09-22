@@ -187,7 +187,7 @@
 {
     if (semFile)
         dispatch_semaphore_signal(semFile);
-        
+
     if (!instance)
         return;
 
