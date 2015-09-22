@@ -175,15 +175,15 @@
 {
     if (!m_thread)
         return [self _startRecordingToOutputFileURL:url
-                                       withDuration:duration withBlocking
+                                       withDuration:duration
                                        withBlocking:blocking];
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelector:@selector(startRecordingWithDict:)
                  onThread:m_thread
                withObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                         @"url", url,
-                                        @"duration", [NSNumber numberWithFloat:duration];,
-                                        @"blocking", [NSNumber numberWithUnsignedInt:blocking];,
+                                        @"duration", [NSNumber numberWithFloat:duration],
+                                        @"blocking", [NSNumber numberWithUnsignedInt:blocking],
                                         nil]
             waitUntilDone:YES];
     [pool release];
