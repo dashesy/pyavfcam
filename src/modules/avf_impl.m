@@ -283,7 +283,10 @@
         m_pVideoFileOutput = nil;
         m_pStillImageOutput = nil;
 
-        m_thread =  [[NSThread alloc] initWithTarget:self selector:@selector(runThread) object:nil];
+        ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
+        m_thread =  [[NSThread alloc] initWithTarget:(AVCaptureDelegate *)proxy selector:@selector(runThread) object:nil];
+        [proxy release];
+
         [m_thread start];
 
         // Actually go on and create the session but in the thread
