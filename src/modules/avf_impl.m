@@ -224,8 +224,8 @@ static dispatch_queue_t _backgroundQueue = nil;
         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
         int err = dispatch_semaphore_wait(m_semFile, timout);
-        std::cout << "err " << std::endl;
-        
+        std::cout << "err " << err << std::endl;
+
 //        float wait = blocking + duration;
 //        std::cout << " wait " << wait << std::endl;
 //        int err;
