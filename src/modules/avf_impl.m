@@ -96,16 +96,16 @@
             // Start the AV session
             [m_pSession startRunning];
 
-            if (m_pVideoFileOutput) {
-                // Set movie to 30fps by default
-                AVCaptureConnection *videoConnection = [m_pVideoFileOutput connectionWithMediaType:AVMediaTypeVideo];
-                if (videoConnection) {
-                    if (videoConnection.isVideoMinFrameDurationSupported)
-                        videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
-                    if (videoConnection.isVideoMaxFrameDurationSupported)
-                        videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
-                }
-            }
+//             if (m_pVideoFileOutput) {
+//                 // Set movie to 30fps by default
+//                 AVCaptureConnection *videoConnection = [m_pVideoFileOutput connectionWithMediaType:AVMediaTypeVideo];
+//                 if (videoConnection) {
+//                     if (videoConnection.isVideoMinFrameDurationSupported)
+//                         videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
+//                     if (videoConnection.isVideoMaxFrameDurationSupported)
+//                         videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
+//                 }
+//             }
         }
     }
 
@@ -116,6 +116,7 @@
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     // Set the duration of the video, pretend fps is 600, be a nice sheep
     if (duration > 0)
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
@@ -125,13 +126,13 @@
         m_semFile = nil;
     }
 
-//        dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
-//        dispatch_sync(queue, ^(void){
-
     std::cout << " recording cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
 
     if (blocking)
         m_semFile = dispatch_semaphore_create(0);
+
+    dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
+    dispatch_async(queue, ^(void){
 
     // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
@@ -140,23 +141,23 @@
     [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
     [proxy release];
 
-    // std::cout << " 2  m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
+    });
 
     // Block on file output, time out in more than the expected time!
     if (m_semFile) {
-        dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
-                                               (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-        dispatch_semaphore_wait(m_semFile, timout);
-//        float wait = blocking + duration;
-//        std::cout << " wait " << wait << std::endl;
-//        int err;
-//        while ((err = dispatch_semaphore_wait(m_m_semFile, DISPATCH_TIME_NOW))) {
-//            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-//            wait -= 0.05;
-//            if (wait <= 0)
-//                break;
-//        }
-//        std::cout << "err " << err << " wait " << wait << std::endl;
+//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
+//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+//         dispatch_semaphore_wait(m_semFile, timout);
+        float wait = blocking + duration;
+        std::cout << " wait " << wait << std::endl;
+        int err;
+        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+            wait -= 0.05;
+            if (wait <= 0)
+               break;
+        }
+        std::cout << "err " << err << " wait " << wait << std::endl;
 //
         dispatch_release(m_semFile);
         m_semFile = NULL;
@@ -165,7 +166,7 @@
         [m_pVideoFileOutput stopRecording];
     }
 
-//        });
+    [pool release];
 }
 
 // start recording in the correct thread
@@ -219,6 +220,7 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
+    std::cout << " out file " << std::endl;
     if (m_semFile)
         dispatch_semaphore_signal(m_semFile);
 
@@ -367,7 +369,7 @@
                 
         // grace period
         if (m_semEnd) {
-            int seconds = 4;
+            int seconds = 5;
             dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, seconds * NSEC_PER_SEC );
             int err = dispatch_semaphore_wait(m_semEnd, timout);
             if (err == 0) {
