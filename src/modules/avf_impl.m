@@ -45,7 +45,18 @@
 
 @end
 
+static dispatch_queue_t _backgroundQueue = nil;
+
 @implementation AVCaptureDelegate
+
++ (void)initialize {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    _backgroundQueue = dispatch_queue_create(
+        "pyavfcam.background",
+        DISPATCH_QUEUE_SERIAL);
+  });
+}
 
 // Keep the thread runloop alive
 -(void)keepAlive:(NSTimer *)timer
@@ -57,7 +68,6 @@
 // Constructor delegate
 -(void)createSession
 {
-    std::cout << " session cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     m_pDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -84,19 +94,6 @@
 
                 [m_pSession addOutput:m_pStillImageOutput];
             }
-    //        if (m_instance->m_sink_callback) {
-    //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
-    //            dispatch_queue_t videoQueue = dispatch_queue_create("videoQueue", NULL);
-    //            [video_buffer_output setSampleBufferDelegate:self queue:videoQueue];
-    //
-    //            video_buffer_output.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
-    //            video_buffer_output.alwaysDiscardsLateCameraFrames=YES;
-    //        }
-    //        if (video_buffer_output)
-    //            [m_pSession addOutput:video_buffer_output];
-
-            // Start the AV session
-            [m_pSession startRunning];
 
             if (m_pVideoFileOutput) {
                 // Set movie to 30fps by default
@@ -110,8 +107,71 @@
             }
         }
     }
+    if (m_pSession) {
+        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+        [center addObserverForName:AVCaptureSessionRuntimeErrorNotification
+                            object:nil
+                             queue:nil
+                        usingBlock:^(NSNotification* notification) {
+          NSLog(@"Capture session error: %@", notification.userInfo);
+        }];
+
+        // Start the AV session
+        AVCaptureSession* session = m_pSession;
+        dispatch_async(_backgroundQueue, ^{
+                       [session startRunning];
+        });
+    }
 
     [pool drain];
+}
+
+// Destructor delegate
+-(void)deallocateSession
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    // BUG: AVFoundation causes segfaults if release some of these,
+    //      this is only evident if object lives in a non-main thread.
+    //      potential for memory leak is annoying but I cannot find a safe way to deallocate.
+
+    if (m_pSession) {
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        if (m_pSession.isRunning) {
+          AVCaptureSession* session = m_pSession;
+          dispatch_async(_backgroundQueue, ^{
+            [session stopRunning];
+            [session release];
+          });
+        }
+        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        m_pSession = NULL;
+    }
+
+    if (m_pVideoInput) {
+        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
+        //[m_pVideoInput release];
+        m_pVideoInput = NULL;
+    }
+
+    if (m_pVideoFileOutput) {
+        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
+        //[m_pVideoFileOutput release];
+        m_pVideoFileOutput = NULL;
+     }
+
+    if (m_pStillImageOutput) {
+        std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
+        //[m_pStillImageOutput release];
+        m_pStillImageOutput = NULL;
+     }
+
+    if (m_pDevice) {
+        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
+        //[m_pDevice release];
+        m_pDevice = NULL;
+    }
+
+    [pool release];
 }
 
 - (void)_startRecordingToOutputFileURL:(NSURL *)url
@@ -222,7 +282,6 @@
   fromConnections:(NSArray *)connections
   error:(NSError *)error
 {
-    std::cout << " out file " << std::endl;
     if (m_semFile)
         dispatch_semaphore_signal(m_semFile);
 
@@ -239,9 +298,12 @@
     // We can notify
 }
 
-- (id)init
+- (void)stopThread
 {
-    return [self initWithInstance:NULL];
+    // this should darin the runloop
+    [m_timer invalidate];
+    // Make sure I stop
+    CFRunLoopStop(CFRunLoopGetCurrent());
 }
 
 // Thread life
@@ -258,59 +320,20 @@
                                              userInfo:nil repeats:YES];
     [proxy release];
 
-    std::cout << "before thread cur " << CFRunLoopGetCurrent() << std::endl;
     // Start the run loop
     CFRunLoopRun();
-    std::cout << "after thread cur " << CFRunLoopGetCurrent() << std::endl;
 
-    // BUG: AVFoundation causes segfaults if release some of these,
-    //      this is only evident if object lives in a non-main thread.
-    //      potential for memory leak is annoying but I cannot find a safe way to deallocate.
-
-    if (m_pSession) {
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
-//         [m_pSession stopRunning];
-        // Remove the connections so the library might clean up
-//         for (AVCaptureInput *input1 in m_pSession.inputs)
-//             [m_pSession removeInput:input1];
-//         for (AVCaptureOutput *output1 in m_pSession.outputs)
-//             [m_pSession removeOutput:output1];
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
-        if (m_pSession.isRunning)
-            [m_pSession stopRunning];
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
-        [m_pSession release];
-        m_pSession = NULL;
-    }
-
-    if (m_pVideoInput) {
-        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
-        //[m_pVideoInput release];
-        m_pVideoInput = NULL;
-    }
-
-    if (m_pVideoFileOutput) {
-        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
-        //[m_pVideoFileOutput release];
-        m_pVideoFileOutput = NULL;
-     }
-
-    if (m_pStillImageOutput) {
-        std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
-        //[m_pStillImageOutput release];
-        m_pStillImageOutput = NULL;
-     }
-
-    if (m_pDevice) {
-        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
-        //[m_pDevice release];
-        m_pDevice = NULL;
-    }
+    [self deallocateSession];
 
     [pool drain];
 
     if (m_semEnd)
         dispatch_semaphore_signal(m_semEnd);
+}
+
+- (id)init
+{
+    return [self initWithInstance:NULL];
 }
 
 - (id)initWithInstance:(CppAVFCam *)pInstance
@@ -348,14 +371,6 @@
 - (void)setInstance:(CppAVFCam *)pInstance
 {
     m_instance = pInstance;
-}
-
-- (void)stopThread
-{
-    // this should darin the runloop
-    [m_timer invalidate];
-    // Make sure I stop
-    CFRunLoopStop(CFRunLoopGetCurrent());
 }
 
 // Destructor
