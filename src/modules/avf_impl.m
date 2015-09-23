@@ -288,6 +288,7 @@ static dispatch_queue_t _backgroundQueue = nil;
   fromConnections:(NSArray *)connections
 {
     // We can notify
+    std::cout << " recording started cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 - (void)stopThread
