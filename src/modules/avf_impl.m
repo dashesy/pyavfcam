@@ -56,6 +56,7 @@
 // Constructor delegate
 -(void)createSession
 {
+    std::cout << " session cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     m_pDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -96,16 +97,16 @@
             // Start the AV session
             [m_pSession startRunning];
 
-//             if (m_pVideoFileOutput) {
-//                 // Set movie to 30fps by default
-//                 AVCaptureConnection *videoConnection = [m_pVideoFileOutput connectionWithMediaType:AVMediaTypeVideo];
-//                 if (videoConnection) {
-//                     if (videoConnection.isVideoMinFrameDurationSupported)
-//                         videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
-//                     if (videoConnection.isVideoMaxFrameDurationSupported)
-//                         videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
-//                 }
-//             }
+            if (m_pVideoFileOutput) {
+                // Set movie to 30fps by default
+                AVCaptureConnection *videoConnection = [m_pVideoFileOutput connectionWithMediaType:AVMediaTypeVideo];
+                if (videoConnection) {
+                    if (videoConnection.isVideoMinFrameDurationSupported)
+                        videoConnection.videoMinFrameDuration = CMTimeMake(1, 30);
+                    if (videoConnection.isVideoMaxFrameDurationSupported)
+                        videoConnection.videoMaxFrameDuration = CMTimeMake(1, 30);
+                }
+            }
         }
     }
 
@@ -131,8 +132,8 @@
     if (blocking)
         m_semFile = dispatch_semaphore_create(0);
 
-    dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", NULL);
-    dispatch_async(queue, ^(void){
+//     dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", DISPATCH_QUEUE_SERIAL);
+//     dispatch_async(queue, ^(void){
 
     // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
@@ -141,7 +142,7 @@
     [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
     [proxy release];
 
-    });
+//     });
 
     // Block on file output, time out in more than the expected time!
     if (m_semFile) {
