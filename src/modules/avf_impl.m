@@ -51,6 +51,7 @@
 -(void)keepAlive:(NSTimer *)timer
 {
     // Can do some background here
+    std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 // Constructor delegate
@@ -75,13 +76,13 @@
                 m_pStillImageOutput = [[AVCaptureStillImageOutput alloc] init];
 
             if (m_pStillImageOutput) {
-                [m_pSession addOutput:m_pStillImageOutput];
                 // If outputSettings is not set no iamge is returned
                 NSString* key = (NSString*)kCVPixelBufferPixelFormatTypeKey;
                 NSNumber* value = [NSNumber numberWithUnsignedInt:kCVPixelFormatType_32BGRA];
                 NSDictionary* outputSettings = [NSDictionary dictionaryWithObject:value forKey:key];
-
                 [m_pStillImageOutput setOutputSettings:outputSettings];
+
+                [m_pSession addOutput:m_pStillImageOutput];
             }
     //        if (m_instance->m_sink_callback) {
     //            video_buffer_output = [[AVCaptureVideoDataOutput alloc] init];
