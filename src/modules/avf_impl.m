@@ -108,18 +108,11 @@ static dispatch_queue_t _backgroundQueue = nil;
         }
     }
     if (m_pSession) {
-        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-        [center addObserverForName:AVCaptureSessionRuntimeErrorNotification
-                            object:nil
-                             queue:nil
-                        usingBlock:^(NSNotification* notification) {
-          NSLog(@"Capture session error: %@", notification.userInfo);
-        }];
-
+        m_pSession.sessionPreset = AVCaptureSessionPreset640x480;
         // Start the AV session
         AVCaptureSession* session = m_pSession;
-        dispatch_async(_backgroundQueue, ^{
-                       [session startRunning];
+        dispatch_sync(_backgroundQueue, ^{
+                      [session startRunning];
         });
     }
 
@@ -183,15 +176,8 @@ static dispatch_queue_t _backgroundQueue = nil;
     if (duration > 0)
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
 
-    if (m_semFile) {
-        dispatch_release(m_semFile);
-        m_semFile = nil;
-    }
 
     std::cout << " recording cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
-
-    if (blocking)
-        m_semFile = dispatch_semaphore_create(0);
 
 //     dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", DISPATCH_QUEUE_SERIAL);
 //     dispatch_async(queue, ^(void){
@@ -205,28 +191,6 @@ static dispatch_queue_t _backgroundQueue = nil;
 
 //     });
 
-    // Block on file output, time out in more than the expected time!
-    if (m_semFile) {
-//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
-//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-//         dispatch_semaphore_wait(m_semFile, timout);
-        float wait = blocking + duration;
-        std::cout << " wait " << wait << std::endl;
-        int err;
-        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-            wait -= 0.05;
-            if (wait <= 0)
-               break;
-        }
-        std::cout << "err " << err << " wait " << wait << std::endl;
-//
-        dispatch_release(m_semFile);
-        m_semFile = NULL;
-
-        // Manually stop recording
-        [m_pVideoFileOutput stopRecording];
-    }
 
     [pool release];
 }
@@ -236,20 +200,48 @@ static dispatch_queue_t _backgroundQueue = nil;
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking
 {
-    if (!m_thread)
-        return [self _startRecordingToOutputFileURL:url
-                                       withDuration:duration
-                                       withBlocking:blocking];
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSDictionary * params = [NSDictionary dictionaryWithObjectsAndKeys:
                                         url, @"url",
                                         [NSNumber numberWithFloat:duration], @"duration",
                                         [NSNumber numberWithUnsignedInt:blocking], @"blocking",
                                         nil];
+
+    if (m_semFile) {
+        dispatch_release(m_semFile);
+        m_semFile = nil;
+    }
+    if (blocking)
+        m_semFile = dispatch_semaphore_create(0);
+
     [self performSelector:@selector(startRecordingWithDict:)
                  onThread:m_thread
                withObject:params
             waitUntilDone:YES];
+
+    // Block on file output, time out in more than the expected time!
+    if (m_semFile) {
+        dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
+                                               (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+        int err = dispatch_semaphore_wait(m_semFile, timout);
+        std::cout << "err " << std::endl;
+        
+//        float wait = blocking + duration;
+//        std::cout << " wait " << wait << std::endl;
+//        int err;
+//        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+//            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+//            wait -= 0.05;
+//            if (wait <= 0)
+//               break;
+//        }
+//        std::cout << "err " << err << " wait " << wait << std::endl;
+
+        dispatch_release(m_semFile);
+        m_semFile = NULL;
+
+    }
+
     [pool release];
 }
 
@@ -356,6 +348,14 @@ static dispatch_queue_t _backgroundQueue = nil;
         [proxy release];
 
         [m_thread start];
+
+        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+        [center addObserverForName:AVCaptureSessionRuntimeErrorNotification
+                            object:nil
+                             queue:nil
+                        usingBlock:^(NSNotification* notification) {
+          NSLog(@"Capture session error: %@", notification.userInfo);
+        }];
 
         // Actually go on and create the session but in the thread
         [self performSelector:@selector(createSession)
