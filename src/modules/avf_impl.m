@@ -154,25 +154,21 @@ static dispatch_queue_t _backgroundQueue = nil;
     [proxy release];
 
     if (m_semFile) {
-
-//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
-//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-//         int err = dispatch_semaphore_wait(m_semFile, timout);
-//         std::cout << "err " << err << std::endl;
         float wait = duration + blocking;
-        if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
+        if (CFRunLoopGetCurrent() == CFRunLoopGetMain()) {
             std::cout << " waiting on main " << wait << std::endl;
-        else
+            int err;
+            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
+                wait -= 0.05;
+                if (wait <= 0)
+                   break;
+            }
+            std::cout << "err " << err << " wait " << wait << std::endl;
+        } else {
             std::cout << " wait " << wait << std::endl;
-        int err;
-        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
-//            [NSThread sleepForTimeInterval:0.05];
-            wait -= 0.05;
-            if (wait <= 0)
-               break;
+            [NSThread sleepForTimeInterval:wait];
         }
-        std::cout << "err " << err << " wait " << wait << std::endl;
     }
     [pool release];
 }
@@ -277,8 +273,7 @@ static dispatch_queue_t _backgroundQueue = nil;
   didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
   fromConnections:(NSArray *)connections
 {
-    // We can notify
-    std::cout << " recording started cur " << CFRunLoopGetCurrent() << std::endl;
+//    std::cout << " recording started cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 - (id)init
@@ -328,7 +323,7 @@ static dispatch_queue_t _backgroundQueue = nil;
     //      potential for memory leak is annoying but I cannot find a safe way to deallocate.
 
     if (m_pSession) {
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         if (m_pSession.isRunning) {
           AVCaptureSession* session = m_pSession;
           dispatch_async(_backgroundQueue, ^{
@@ -336,30 +331,30 @@ static dispatch_queue_t _backgroundQueue = nil;
             [session release];
           });
         }
-        std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
+        //std::cout << "   m_pSession " << CFGetRetainCount((__bridge CFTypeRef)m_pSession) << std::endl;
         m_pSession = NULL;
     }
 
     if (m_pVideoInput) {
-        std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
+        //std::cout << "   m_pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoInput) << std::endl;
         //[m_pVideoInput release];
         m_pVideoInput = NULL;
     }
 
     if (m_pVideoFileOutput) {
-        std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
+        //std::cout << "   m_pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pVideoFileOutput) << std::endl;
         //[m_pVideoFileOutput release];
         m_pVideoFileOutput = NULL;
      }
 
     if (m_pStillImageOutput) {
-        std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
+        //std::cout << "   m_pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)m_pStillImageOutput) << std::endl;
         //[m_pStillImageOutput release];
         m_pStillImageOutput = NULL;
      }
 
     if (m_pDevice) {
-        std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
+        //std::cout << "   m_pDevice " << CFGetRetainCount((__bridge CFTypeRef)m_pDevice) << std::endl;
         //[m_pDevice release];
         m_pDevice = NULL;
     }
