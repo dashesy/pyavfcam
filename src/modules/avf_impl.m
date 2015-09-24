@@ -152,7 +152,7 @@ static dispatch_queue_t _backgroundQueue = nil;
     // Start recordign the video and let me know when it is done
     [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
     [proxy release];
-    
+
     if (m_semFile) {
 
 //         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
@@ -178,8 +178,8 @@ static dispatch_queue_t _backgroundQueue = nil;
 }
 
 - (void)captureFrameWithBlocking:(unsigned int)blocking
-  error:(NSError * _Nullable *)error
-  completionHandler:(void (^)(CameraFrame & frame))handle
+  error:(NSError * *)error
+  frameHandler:(void (^)(CameraFrame & frame))handle
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -198,49 +198,51 @@ static dispatch_queue_t _backgroundQueue = nil;
         NSMutableDictionary* details = [NSMutableDictionary dictionary];
         [details setValue:@"No AVCaptureConnection found for still image capture" forKey:NSLocalizedDescriptionKey];
         *error = [NSError errorWithDomain:@"pyavfcam" code:100 userInfo:details];
+
+        [pool release];
+        return
     }
 
-    if (!error) {
-        __block dispatch_semaphore_t sem = NULL;
-        __block NSError *_err = nil;
-        if (blocking)
-            sem = dispatch_semaphore_create(0);
+    __block dispatch_semaphore_t sem = NULL;
+    __block NSError *_err = nil;
+    if (blocking)
+        sem = dispatch_semaphore_create(0);
 
-        [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
-                             completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
+    [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
+                         completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
 
-                if (error) {
-                    _err = error;
-                    NSLog(@"err %@", error);
-                } else {
-                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-                    CameraFrame frame(imageSampleBuffer);
-                    if (handle)
-                        handle(frame);
-                    // Callback at the end
-                    m_instance->image_output(frame);
-                    if (sem)
-                        dispatch_semaphore_signal(sem);
+            if (error) {
+                _err = error;
+                NSLog(@"err %@", error);
+            } else {
+                NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                CameraFrame frame(imageSampleBuffer);
+                if (handle)
+                    handle(frame);
+                // Callback at the end
+                m_instance->image_output(frame);
+                if (sem)
+                    dispatch_semaphore_signal(sem);
 
-                    [pool drain];
-                }
-        }];
-        if (error)
-            *error = _err;
-        if (sem) {
-            // This is blocking call so wait at most handful of seconds for the signal
-            float wait = blocking;
-            int err;
-            while ((err = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW))) {
-                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-                wait -= 0.05;
-                if (wait <= 0)
-                    break;
+                [pool drain];
             }
-            dispatch_release(sem);
-            sem = NULL;
+    }];
+    if (error)
+        *error = _err;
+    if (sem) {
+        // This is blocking call so wait at most handful of seconds for the signal
+        float wait = blocking;
+        int err;
+        while ((err = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW))) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+            wait -= 0.05;
+            if (wait <= 0)
+                break;
         }
+        dispatch_release(sem);
+        sem = NULL;
     }
+
     [pool release];
 }
 

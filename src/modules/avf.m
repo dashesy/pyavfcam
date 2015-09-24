@@ -307,7 +307,7 @@ PyObject * CppAVFCam::snap_picture(std::string path, unsigned int blocking,
         file_error = nil;
         [m_pCapture captureFrameWithBlocking:blocking
                                        error:&error
-                           completionHandler:^(CameraFrame & frame) {
+                                frameHandler:^(CameraFrame & frame) {
 
             if (!no_file)
                 frame.save(path, uti_str, quality);
