@@ -200,7 +200,7 @@ static dispatch_queue_t _backgroundQueue = nil;
         *error = [NSError errorWithDomain:@"pyavfcam" code:100 userInfo:details];
 
         [pool release];
-        return
+        return;
     }
 
     __block dispatch_semaphore_t sem = NULL;
