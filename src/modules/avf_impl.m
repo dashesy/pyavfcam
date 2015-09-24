@@ -195,10 +195,11 @@ static dispatch_queue_t _backgroundQueue = nil;
             break;
     }
     if (!videoConnection) {
-        NSMutableDictionary* details = [NSMutableDictionary dictionary];
-        [details setValue:@"No AVCaptureConnection found for still image capture" forKey:NSLocalizedDescriptionKey];
-        *error = [NSError errorWithDomain:@"pyavfcam" code:100 userInfo:details];
-
+        if (error) {
+            NSMutableDictionary* details = [NSMutableDictionary dictionary];
+            [details setValue:@"No AVCaptureConnection found for still image capture" forKey:NSLocalizedDescriptionKey];
+            *error = [NSError errorWithDomain:@"pyavfcam" code:100 userInfo:details];
+        }
         [pool release];
         return;
     }
