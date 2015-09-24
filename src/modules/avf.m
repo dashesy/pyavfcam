@@ -174,14 +174,15 @@ void CppAVFCam::image_output(CameraFrame &frame)
     m_pLastImage = NULL;
     if (m_bBlockingImage)
         m_pLastImage = cy_get_frame(frame);
+
     if (!m_haveImageCallback)
-        return
+        return;
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
     if (m_pLastImage == NULL)
         m_pLastImage = cy_get_frame(frame);
-    PyObject * args = Py_BuildValue("(O)", pObj);
+    PyObject * args = Py_BuildValue("(O)", m_pLastImage);
 
     // If non-blocking it is from a foreign thread make sure gil is aquired
     PyGILState_STATE gstate;
