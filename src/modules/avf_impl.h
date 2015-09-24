@@ -7,16 +7,14 @@
 #import <AVFoundation/AVFoundation.h>
 
 class CppAVFCam;
+class CameraFrame;
 
 // A basic shim that just passes things to C++ instance
 @interface AVCaptureDelegate : NSObject <AVCaptureFileOutputRecordingDelegate,
                                          AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     CppAVFCam * m_instance; // What I am delegated for
-    NSTimer *m_timer; // Keep-alive timer
     dispatch_semaphore_t m_semFile; // used to signal when file recording is done
-    dispatch_semaphore_t m_semEnd; // used to know when thread ends
-    NSThread *m_thread; // thread to have dedicated runloop
 
 // Make thes public just for quick checks in avf.m
 @public
@@ -27,6 +25,11 @@ class CppAVFCam;
     AVCaptureStillImageOutput * m_pStillImageOutput;
 }
 
+- (void)captureFrameWithBlocking:(unsigned int)blocking
+  NSError *error
+  completionHandler:(void (^)(CameraFrame & frame))handle;
+
+- (void)stop_recording
 - (void)startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking;

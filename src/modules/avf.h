@@ -24,6 +24,7 @@ private:
     AVCaptureDelegate * m_pCapture;  // Capture delegate (pImpl for ObjC bits)
 
 private:
+    PyObject * m_pLastImage;
     bool m_bBlockingImage;
 
 private:
@@ -33,7 +34,7 @@ private:
 public:
     virtual void file_output_done(bool error);
     virtual void video_output(CameraFrame &frame);
-    virtual PyObject * image_output(CameraFrame &frame);
+    virtual void image_output(CameraFrame &frame);
 
 public:
     // simple accessors

@@ -22,7 +22,7 @@ CppAVFCam::CppAVFCam()
     : m_pObj(NULL),
       m_sink_file(false), m_sink_callback(false), m_sink_image(false),
       m_pCapture(NULL),
-      m_bBlockingImage(false),
+      m_pLastImage(NULL), m_bBlockingImage(false),
       m_videoFrameCount(0), m_imageFrameCount(0),
       m_haveImageCallback(true), m_haveVideoCallback(true), m_haveMovieCallback(true)
 {
@@ -92,6 +92,7 @@ CppAVFCam::~CppAVFCam()
     // decrease refcount of the Python binding
     Py_XDECREF(m_pObj);
     m_pObj = NULL;
+    m_pLastImage = NULL;
 }
 
 // Move assignment operator
@@ -164,15 +165,22 @@ void CppAVFCam::video_output(CameraFrame &frame)
 }
 
 // Video frame callback to Python
-PyObject * CppAVFCam::image_output(CameraFrame &frame)
+void CppAVFCam::image_output(CameraFrame &frame)
 {
     frame.m_frameCount = m_imageFrameCount++;
-    if (!m_pObj || !m_haveImageCallback)
-        return NULL;
+    if (!m_pObj)
+        return;
+
+    m_pLastImage = NULL;
+    if (m_bBlockingImage)
+        m_pLastImage = cy_get_frame(frame)
+    if (!m_haveImageCallback)
+        return
 
     int overridden = 0;
     PyObject * kwargs = Py_BuildValue("{}");
-    PyObject * pObj = cy_get_frame(frame);
+    if (m_pLastImage == NULL)
+        m_pLastImage = cy_get_frame(frame);
     PyObject * args = Py_BuildValue("(O)", pObj);
 
     // If non-blocking it is from a foreign thread make sure gil is aquired
@@ -188,8 +196,6 @@ PyObject * CppAVFCam::image_output(CameraFrame &frame)
         
     if (!overridden)
         m_haveImageCallback = false;
-
-    return pObj;
 }
 
 void CppAVFCam::set_settings(unsigned int width, unsigned int height, unsigned int fps)
@@ -264,9 +270,7 @@ void CppAVFCam::stop_recording()
 
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    //[m_pVideoFileOutput stopRecording];
-
-    // Note that some samples will be flushed in the backgrouns and the callback will know when the file is ready
+    [m_pCapture stopRecording];
 
     [pool drain];
 }
@@ -280,94 +284,42 @@ PyObject * CppAVFCam::snap_picture(std::string path, unsigned int blocking,
     if (!m_pCapture->m_pStillImageOutput)
         throw std::invalid_argument( "image video sink not initialized" );
         
-//    m_bBlockingImage = blocking > 0;
-//
-//    bool no_file = path.length() == 0;
-//    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-//
-//    NSError *file_error = nil;
-//    if (! no_file) {
-//        // Get the string and expand it to a file URL
-//        NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
-//        NSURL *url = [NSURL fileURLWithPath:path_str];
-//
-//        // AVFoundation will not overwrite but we do, remove the file if it exists
-//        [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
-//    }
-//
-//    AVCaptureConnection *videoConnection = nil;
-//    // The only accepted file error is if file does not exist yet
-//    if (!file_error || file_error.code == NSFileNoSuchFileError) {
-//        file_error = nil;
-//        for (AVCaptureConnection *connection in m_pStillImageOutput.connections) {
-//            for (AVCaptureInputPort *port in [connection inputPorts]) {
-//                if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
-//                    videoConnection = connection;
-//                    break;
-//                }
-//            }
-//            if (videoConnection)
-//                break;
-//        }
-//    }
-    __block PyObject * pObj = NULL;
-//    if (videoConnection) {
-//
-//        // FIXME: Make sure all the internals to the lambda are kept by value, or are weak references
-//
-//        __block dispatch_semaphore_t sem = NULL;
-//        if (blocking)
-//            sem = dispatch_semaphore_create(0);
-//        [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
-//                             completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
-//
-//                if (error) {
-//                    // TODO: take care of error handling by reporting it if blocking
-//                    NSLog(@"err %@", error);
-//                } else {
-//                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-//                    CameraFrame frame(imageSampleBuffer);
-//                    if (!no_file)
-//                        frame.save(path, uti_str, quality);
-//                    // Callback at the end
-//                    pObj = image_output(frame);
-//                    if (pObj == NULL && blocking)
-//                        pObj = cy_get_frame(frame);
-//                    if (sem) {
-//                        dispatch_semaphore_signal(sem);
-//                        //std::cout << "signal" << std::endl;
-//                    }
-//
-//                    [pool drain];
-//                }
-//        }];
-//        if (sem) {
-//            //std::cout << " wait for signal" << std::endl;
-//            // This is blocking call so wait at most handful of seconds for the signal
-//            float wait = blocking;
-//            int err;
-//            while ((err = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW))) {
-//                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-//                wait -= 0.05;
-//                if (wait <= 0)
-//                    break;
-//            }
-//
-//            //std::cout << " done waiting for " << wait << "err " << err << std::endl;
-//            // dispatch_semaphore_wait(sem, timeout);
-//            dispatch_release(sem);
-//            sem = NULL;
-//        }
-//    }
-//
-//
-//    [pool drain];
-//
-//    if (file_error)
-//        throw std::invalid_argument( "invalid or inaccessable file path" );
-//    if (!videoConnection)
-//        throw std::runtime_error( "connection error" );
-//
+    m_bBlockingImage = blocking > 0;
+    m_pLastImage = NULL;
+
+    bool no_file = path.length() == 0;
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
+    NSError *file_error = nil;
+    if (! no_file) {
+        // Get the string and expand it to a file URL
+        NSString* path_str = [[NSString stringWithUTF8String:path.c_str()] stringByExpandingTildeInPath];
+        NSURL *url = [NSURL fileURLWithPath:path_str];
+
+        // AVFoundation will not overwrite but we do, remove the file if it exists
+        [[NSFileManager defaultManager] removeItemAtURL:url error:&file_error];
+    }
+
+    NSError *error = nil;
+    // The only accepted file error is if file does not exist yet
+    if (!file_error || file_error.code == NSFileNoSuchFileError) {
+        file_error = nil;
+        [m_pCapture captureFrameWithBlocking:blocking
+                                       error:&file_error
+                           completionHandler:^(CameraFrame & frame) {
+
+            if (!no_file)
+                frame.save(path, uti_str, quality);
+        }];
+    }
+    [pool drain];
+
+    if (file_error)
+        throw std::invalid_argument( "invalid or inaccessable file path" );
+    if (error)
+        throw std::runtime_error( "connection error" );
+
+    PyObject * pObj = m_pLastImage;
     if (pObj == NULL) {
         Py_INCREF(Py_None);
         pObj = Py_None;

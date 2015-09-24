@@ -58,11 +58,10 @@ static dispatch_queue_t _backgroundQueue = nil;
   });
 }
 
-// Keep the thread runloop alive
+// Keep the runloop alive
 -(void)keepAlive:(NSTimer *)timer
 {
-    // Can do some background here
-    std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
+//    std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 // Constructor delegate
@@ -119,6 +118,194 @@ static dispatch_queue_t _backgroundQueue = nil;
     [pool drain];
 }
 
+- (void)stop_recording
+{
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
+    if (m_pVideoFileOutput)
+        [m_pVideoFileOutput stopRecording];
+
+    // Note that some samples will be flushed in the backgrouns and the callback will know when the file is ready
+
+    [pool drain];
+}
+
+- (void)startRecordingToOutputFileURL:(NSURL *)url
+  withDuration:(float)duration
+  withBlocking:(unsigned int)blocking
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    // Set the duration of the video, pretend fps is 600, be a nice sheep
+    if (duration > 0)
+        [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
+
+    // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
+    //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
+    ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
+    // Start recordign the video and let me know when it is done
+    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
+    [proxy release];
+    if (blocking) {
+
+//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
+//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+//         int err = dispatch_semaphore_wait(m_semFile, timout);
+//         std::cout << "err " << err << std::endl;
+        if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
+            std::cout << " waiting on main " << wait << std::endl;
+        else
+            std::cout << " wait " << wait << std::endl;
+        int err;
+        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
+//            [NSThread sleepForTimeInterval:0.05];
+            wait -= 0.05;
+            if (wait <= 0)
+               break;
+        }
+        std::cout << "err " << err << " wait " << wait << std::endl;
+    }
+    [pool release];
+}
+
+- (void)captureFrameWithBlocking:(unsigned int)blocking
+  NSError *error
+  completionHandler:(void (^)(CameraFrame & frame))handle
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    AVCaptureConnection *videoConnection = nil;
+    for (AVCaptureConnection *connection in m_pStillImageOutput.connections) {
+        for (AVCaptureInputPort *port in [connection inputPorts]) {
+            if ([[port mediaType] isEqual:AVMediaTypeVideo] ) {
+                videoConnection = connection;
+                break;
+            }
+        }
+        if (videoConnection)
+            break;
+    }
+    if (!videoConnection) {
+        NSMutableDictionary* details = [NSMutableDictionary dictionary];
+        [details setValue:@"No AVCaptureConnection found for still image capture" forKey:NSLocalizedDescriptionKey];
+        *error = [NSError errorWithDomain:@"pyavfcam" code:100 userInfo:details];
+    }
+
+    if (!error) {
+        __block dispatch_semaphore_t sem = NULL;
+        __block NSError _err = nil;
+        if (blocking)
+            sem = dispatch_semaphore_create(0);
+
+        [m_pStillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
+                             completionHandler: ^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
+
+                if (error) {
+                    _err = error;
+                    NSLog(@"err %@", error);
+                } else {
+                    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+                    CameraFrame frame(imageSampleBuffer);
+                    if handle
+                        handle(frame)
+                    // Callback at the end
+                    m_instance->image_output(frame);
+                    if (sem)
+                        dispatch_semaphore_signal(sem);
+
+                    [pool drain];
+                }
+        }];
+        error = _err;
+        if (sem) {
+            // This is blocking call so wait at most handful of seconds for the signal
+            float wait = blocking;
+            int err;
+            while ((err = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW))) {
+                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
+                wait -= 0.05;
+                if (wait <= 0)
+                    break;
+            }
+            dispatch_release(sem);
+            sem = NULL;
+        }
+    }
+    [pool release];
+}
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput
+  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+  fromConnection:(AVCaptureConnection *)connection
+{
+    if (!m_instance)
+        return;
+
+    CameraFrame frame(sampleBuffer);
+    m_instance->video_output(frame);
+
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+  error:(NSError *)error
+{
+    if (m_semFile)
+        dispatch_semaphore_signal(m_semFile);
+
+    if (!m_instance)
+        return;
+
+    m_instance->file_output_done(error != NULL);
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+  fromConnections:(NSArray *)connections
+{
+    // We can notify
+    std::cout << " recording started cur " << CFRunLoopGetCurrent() << std::endl;
+}
+
+- (id)init
+{
+    return [self initWithInstance:NULL];
+}
+
+- (id)initWithInstance:(CppAVFCam *)pInstance
+{
+    self = [super init];
+    if(self) {
+        m_semFile = nil;
+        m_instance = pInstance;
+
+        m_pSession = nil;
+        m_pDevice = nil;
+        m_pVideoInput = nil;
+        m_pVideoFileOutput = nil;
+        m_pStillImageOutput = nil;
+
+        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+        [center addObserverForName:AVCaptureSessionRuntimeErrorNotification
+                            object:nil
+                             queue:nil
+                        usingBlock:^(NSNotification* notification) {
+          NSLog(@"Capture session error: %@", notification.userInfo);
+        }];
+
+        [self createSession];
+
+    }
+    return self;
+}
+
+// Change the c++ instance I am delegated to
+- (void)setInstance:(CppAVFCam *)pInstance
+{
+    m_instance = pInstance;
+}
+
 // Destructor delegate
 -(void)deallocateSession
 {
@@ -167,263 +354,11 @@ static dispatch_queue_t _backgroundQueue = nil;
     [pool release];
 }
 
-- (void)_startRecordingToOutputFileURL:(NSURL *)url
-  withDuration:(float)duration
-  withBlocking:(unsigned int)blocking
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    // Set the duration of the video, pretend fps is 600, be a nice sheep
-    if (duration > 0)
-        [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
-
-
-    std::cout << " recording cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
-
-//     dispatch_queue_t queue = dispatch_queue_create("pyavfcam.fileQueue", DISPATCH_QUEUE_SERIAL);
-//     dispatch_async(queue, ^(void){
-
-    // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
-    //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
-    ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
-    // Start recordign the video and let me know when it is done
-    [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
-    [proxy release];
-
-//     });
-
-
-    [pool release];
-}
-
-- (void)waitForFileOutputFor:(float)wait
-{
-//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
-//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-//         int err = dispatch_semaphore_wait(m_semFile, timout);
-//         std::cout << "err " << err << std::endl;
-    if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
-        std::cout << " waiting on main " << wait << std::endl;
-    else
-        std::cout << " wait " << wait << std::endl;
-    int err;
-    while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
-        [NSThread sleepForTimeInterval:0.05];
-        wait -= 0.05;
-        if (wait <= 0)
-           break;
-    }
-    std::cout << "err " << err << " wait " << wait << std::endl;
-
-}
-
-// start recording in the correct thread
-- (void)startRecordingToOutputFileURL:(NSURL *)url
-  withDuration:(float)duration
-  withBlocking:(unsigned int)blocking
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSDictionary * params = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        url, @"url",
-                                        [NSNumber numberWithFloat:duration], @"duration",
-                                        [NSNumber numberWithUnsignedInt:blocking], @"blocking",
-                                        nil];
-
-    if (m_semFile) {
-        dispatch_release(m_semFile);
-        m_semFile = nil;
-    }
-    if (blocking)
-        m_semFile = dispatch_semaphore_create(0);
-
-    std::cout << " recording 1 cur " << CFRunLoopGetCurrent() << std::endl;
-//     [self performSelector:@selector(startRecordingWithDict:)
-//                  onThread:m_thread
-//                withObject:params
-//             waitUntilDone:YES];
-
-    // Block on file output, time out in more than the expected time!
-    if (m_semFile) {
-            [self _startRecordingToOutputFileURL:url 
-                                    withDuration:duration
-                                    withBlocking:blocking];
-            [self waitForFileOutputFor:(duration + blocking)];
-//         if (CFRunLoopGetCurrent() == CFRunLoopGetMain()) {
-//             [self _startRecordingToOutputFileURL:url 
-//                                     withDuration:duration
-//                                     withBlocking:blocking];
-//             [self waitForFileOutputFor:(duration + blocking)];
-//         } else {
-//             dispatch_sync(dispatch_get_main_queue(), ^{
-//                 [self _startRecordingToOutputFileURL:url 
-//                                         withDuration:duration
-//                                         withBlocking:blocking];
-//                 [self waitForFileOutputFor:(duration + blocking)];
-//             });
-//         }
-        dispatch_release(m_semFile);
-        m_semFile = NULL;
-    }
-
-    [pool release];
-}
-
-- (void)startRecordingWithDict:(NSDictionary*) params
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSURL* url = [params objectForKey:@"url"];
-    float duration = [[params objectForKey:@"duration"] floatValue];
-    unsigned int blocking = [[params objectForKey:@"blocking"] unsignedIntValue];
-    [self _startRecordingToOutputFileURL:url
-                            withDuration:duration
-                            withBlocking:blocking];
-    [pool release];
-}
-
-- (void)captureOutput:(AVCaptureOutput *)captureOutput
-  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
-  fromConnection:(AVCaptureConnection *)connection
-{
-    if (!m_instance)
-        return;
-
-    CameraFrame frame(sampleBuffer);
-    m_instance->video_output(frame);
-
-}
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections
-  error:(NSError *)error
-{
-    if (m_semFile)
-        dispatch_semaphore_signal(m_semFile);
-
-    if (!m_instance)
-        return;
-
-    m_instance->file_output_done(error != NULL);
-}
-
-- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
-  didStartRecordingToOutputFileAtURL:(NSURL *)outputFileURL
-  fromConnections:(NSArray *)connections
-{
-    // We can notify
-    std::cout << " recording started cur " << CFRunLoopGetCurrent() << std::endl;
-}
-
-- (void)stopThread
-{
-    // this should darin the runloop
-    [m_timer invalidate];
-    // Make sure I stop
-    CFRunLoopStop(CFRunLoopGetCurrent());
-}
-
-// Thread life
-- (void)runThread
-{
-    m_semEnd = dispatch_semaphore_create(0);
-
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
-    m_timer = [NSTimer scheduledTimerWithTimeInterval:1
-                                               target:proxy
-                                             selector:@selector(keepAlive:)
-                                             userInfo:nil repeats:YES];
-    [proxy release];
-
-    // Start the run loop
-    CFRunLoopRun();
-
-    [self deallocateSession];
-
-    [pool drain];
-
-    if (m_semEnd)
-        dispatch_semaphore_signal(m_semEnd);
-}
-
-- (id)init
-{
-    return [self initWithInstance:NULL];
-}
-
-- (id)initWithInstance:(CppAVFCam *)pInstance
-{
-    self = [super init];
-    if(self) {
-        m_semEnd = nil;
-        m_semFile = nil;
-        m_instance = pInstance;
-
-        m_timer = nil;
-        m_pSession = nil;
-        m_pDevice = nil;
-        m_pVideoInput = nil;
-        m_pVideoFileOutput = nil;
-        m_pStillImageOutput = nil;
-
-        ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
-        m_thread =  [[NSThread alloc] initWithTarget:(AVCaptureDelegate *)proxy selector:@selector(runThread) object:nil];
-        [proxy release];
-
-        [m_thread start];
-
-        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-        [center addObserverForName:AVCaptureSessionRuntimeErrorNotification
-                            object:nil
-                             queue:nil
-                        usingBlock:^(NSNotification* notification) {
-          NSLog(@"Capture session error: %@", notification.userInfo);
-        }];
-
-        // Actually go on and create the session but in the thread
-        [self performSelector:@selector(createSession)
-                     onThread:m_thread
-                   withObject:nil
-                waitUntilDone:YES];
-
-    }
-    return self;
-}
-
-// Change the c++ instance I am delegated to
-- (void)setInstance:(CppAVFCam *)pInstance
-{
-    m_instance = pInstance;
-}
-
 // Destructor
 -(void)dealloc
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-
-    if (m_thread) {
-        [self performSelector:@selector(stopThread)
-                     onThread:m_thread
-                   withObject:nil
-                waitUntilDone:YES];
-                
-        // grace period
-        if (m_semEnd) {
-            int seconds = 5;
-            dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW, seconds * NSEC_PER_SEC );
-            int err = dispatch_semaphore_wait(m_semEnd, timout);
-            if (err == 0) {
-                dispatch_release(m_semEnd);
-                m_semEnd = nil;
-            } else {
-                std::cerr << "media thread killed after not responding in " << seconds << " seconds!" << std::endl;
-            }
-        }
-
-        [m_thread release];
-        m_thread = nil;
-    }
+    [self deallocateSession];
 
     [pool release];
 
