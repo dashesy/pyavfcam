@@ -139,13 +139,21 @@ static dispatch_queue_t _backgroundQueue = nil;
     if (duration > 0)
         [m_pVideoFileOutput setMaxRecordedDuration:CMTimeMakeWithSeconds((unsigned int)duration, 600)];
 
+    if (m_semFile) {
+        dispatch_release(m_semFile);
+        m_semFile = NULL;
+    }
+    if (blocking)
+        m_semFile = dispatch_semaphore_create(0);
+
     // BUG: ref count of self is increased but unfortunately it seems it is not a weak reference, so later it is not reclaimed !!
     //  The workarond is to use a proxy to force it being used as a weak reference: http://stackoverflow.com/a/3618797/311567
     ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
     // Start recordign the video and let me know when it is done
     [m_pVideoFileOutput startRecordingToOutputFileURL:url recordingDelegate:(AVCaptureDelegate *)proxy];
     [proxy release];
-    if (blocking) {
+    
+    if (m_semFile) {
 
 //         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
 //                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
