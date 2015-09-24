@@ -622,6 +622,10 @@ static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* s
     return unlikely(result < 0) ? result : (result == (eq == Py_EQ));
 }
 
+#ifndef __PYX_FORCE_INIT_THREADS
+  #define __PYX_FORCE_INIT_THREADS 0
+#endif
+
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
     PyListObject* L = (PyListObject*) list;
@@ -2743,16 +2747,17 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_7record(PyObject *__pyx_v_self, PyOb
 }
 
 static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_AVFCam *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_duration, PyObject *__pyx_v_blocking) {
+  float __pyx_v__duration;
+  int __pyx_v__blocking;
   std::string __pyx_v_name_str;
   CppAVFCam *__pyx_v_ref;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  std::string __pyx_t_3;
-  int __pyx_t_4;
-  float __pyx_t_5;
-  unsigned int __pyx_t_6;
+  float __pyx_t_1;
+  int __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  std::string __pyx_t_5;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2761,21 +2766,41 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   /* "src/avf.pyx":217
  *         """
  * 
+ *         cdef float _duration = duration             # <<<<<<<<<<<<<<
+ *         cdef bint _blocking = blocking
+ *         cdef string name_str = name.encode('UTF-8')
+ */
+  __pyx_t_1 = __pyx_PyFloat_AsFloat(__pyx_v_duration); if (unlikely((__pyx_t_1 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v__duration = __pyx_t_1;
+
+  /* "src/avf.pyx":218
+ * 
+ *         cdef float _duration = duration
+ *         cdef bint _blocking = blocking             # <<<<<<<<<<<<<<
+ *         cdef string name_str = name.encode('UTF-8')
+ *         ref = self._ref.get()
+ */
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_v__blocking = __pyx_t_2;
+
+  /* "src/avf.pyx":219
+ *         cdef float _duration = duration
+ *         cdef bint _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         ref = self._ref.get()
  *         if ref == NULL:
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_name, __pyx_n_s_encode); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __pyx_convert_string_from_py_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_v_name_str = __pyx_t_3;
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_name, __pyx_n_s_encode); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__8, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_5 = __pyx_convert_string_from_py_std__in_string(__pyx_t_4); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_v_name_str = __pyx_t_5;
 
-  /* "src/avf.pyx":218
- * 
+  /* "src/avf.pyx":220
+ *         cdef bint _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')
  *         ref = self._ref.get()             # <<<<<<<<<<<<<<
  *         if ref == NULL:
@@ -2783,52 +2808,95 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
  */
   __pyx_v_ref = __pyx_v_self->_ref.get();
 
-  /* "src/avf.pyx":219
+  /* "src/avf.pyx":221
  *         cdef string name_str = name.encode('UTF-8')
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
  *             raise ValueError("Invalid reference!!")
- *         ref.record(name_str, duration, blocking)
+ * 
  */
-  __pyx_t_4 = ((__pyx_v_ref == NULL) != 0);
-  if (__pyx_t_4) {
+  __pyx_t_2 = ((__pyx_v_ref == NULL) != 0);
+  if (__pyx_t_2) {
 
-    /* "src/avf.pyx":220
+    /* "src/avf.pyx":222
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
- *         ref.record(name_str, duration, blocking)
  * 
+ *         with nogil:
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_Raise(__pyx_t_2, 0, 0, 0);
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_Raise(__pyx_t_4, 0, 0, 0);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "src/avf.pyx":219
+    /* "src/avf.pyx":221
  *         cdef string name_str = name.encode('UTF-8')
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
  *             raise ValueError("Invalid reference!!")
- *         ref.record(name_str, duration, blocking)
+ * 
  */
   }
 
-  /* "src/avf.pyx":221
- *         if ref == NULL:
+  /* "src/avf.pyx":224
  *             raise ValueError("Invalid reference!!")
- *         ref.record(name_str, duration, blocking)             # <<<<<<<<<<<<<<
+ * 
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ref.record(name_str, _duration, _blocking)
+ * 
+ */
+  {
+      #ifdef WITH_THREAD
+      PyThreadState *_save;
+      Py_UNBLOCK_THREADS
+      #endif
+      /*try:*/ {
+
+        /* "src/avf.pyx":225
+ * 
+ *         with nogil:
+ *             ref.record(name_str, _duration, _blocking)             # <<<<<<<<<<<<<<
  * 
  *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):
  */
-  __pyx_t_5 = __pyx_PyFloat_AsFloat(__pyx_v_duration); if (unlikely((__pyx_t_5 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_6 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_6 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  try {
-    __pyx_v_ref->record(__pyx_v_name_str, __pyx_t_5, __pyx_t_6);
-  } catch(...) {
-    __Pyx_CppExn2PyErr();
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        try {
+          __pyx_v_ref->record(__pyx_v_name_str, __pyx_v__duration, __pyx_v__blocking);
+        } catch(...) {
+          #ifdef WITH_THREAD
+          PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
+          #endif
+          __Pyx_CppExn2PyErr();
+          #ifdef WITH_THREAD
+          PyGILState_Release(__pyx_gilstate_save);
+          #endif
+          {__pyx_filename = __pyx_f[0]; __pyx_lineno = 225; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        }
+      }
+
+      /* "src/avf.pyx":224
+ *             raise ValueError("Invalid reference!!")
+ * 
+ *         with nogil:             # <<<<<<<<<<<<<<
+ *             ref.record(name_str, _duration, _blocking)
+ * 
+ */
+      /*finally:*/ {
+        /*normal exit:*/{
+          #ifdef WITH_THREAD
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L6;
+        }
+        __pyx_L5_error: {
+          #ifdef WITH_THREAD
+          Py_BLOCK_THREADS
+          #endif
+          goto __pyx_L1_error;
+        }
+        __pyx_L6:;
+      }
   }
 
   /* "src/avf.pyx":210
@@ -2843,8 +2911,8 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
   __Pyx_AddTraceback("pyavfcam.AVFCam.record", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
@@ -2853,8 +2921,8 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   return __pyx_r;
 }
 
-/* "src/avf.pyx":223
- *         ref.record(name_str, duration, blocking)
+/* "src/avf.pyx":227
+ *             ref.record(name_str, _duration, _blocking)
  * 
  *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
@@ -2917,7 +2985,7 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "snap_picture") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "snap_picture") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -2936,7 +3004,7 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_9snap_picture(PyObject *__pyx_v_self
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("snap_picture", 0, 0, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("snap_picture", 0, 0, 4, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 227; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("pyavfcam.AVFCam.snap_picture", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2967,39 +3035,39 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("snap_picture", 0);
 
-  /* "src/avf.pyx":230
+  /* "src/avf.pyx":234
  *         :param quality: if compressed format this is the compression quality
  *         """
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         cdef string uti_str = uti_type.encode('UTF-8')
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_name, __pyx_n_s_encode); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_name, __pyx_n_s_encode); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__10, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __pyx_convert_string_from_py_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __pyx_convert_string_from_py_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_name_str = __pyx_t_3;
 
-  /* "src/avf.pyx":231
+  /* "src/avf.pyx":235
  *         """
  *         cdef string name_str = name.encode('UTF-8')
  *         cdef string uti_str = uti_type.encode('UTF-8')             # <<<<<<<<<<<<<<
  * 
  *         ref = self._ref.get()
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_uti_type, __pyx_n_s_encode); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_uti_type, __pyx_n_s_encode); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__11, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__11, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_3 = __pyx_convert_string_from_py_std__in_string(__pyx_t_1); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __pyx_convert_string_from_py_std__in_string(__pyx_t_1); if (unlikely(PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_uti_str = __pyx_t_3;
 
-  /* "src/avf.pyx":233
+  /* "src/avf.pyx":237
  *         cdef string uti_str = uti_type.encode('UTF-8')
  * 
  *         ref = self._ref.get()             # <<<<<<<<<<<<<<
@@ -3008,7 +3076,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
  */
   __pyx_v_ref = __pyx_v_self->_ref.get();
 
-  /* "src/avf.pyx":234
+  /* "src/avf.pyx":238
  * 
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3018,20 +3086,20 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   __pyx_t_4 = ((__pyx_v_ref == NULL) != 0);
   if (__pyx_t_4) {
 
-    /* "src/avf.pyx":235
+    /* "src/avf.pyx":239
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
  *         frame = ref.snap_picture(name_str, blocking, uti_str, quality)
  * 
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "src/avf.pyx":234
+    /* "src/avf.pyx":238
  * 
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3040,36 +3108,36 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
  */
   }
 
-  /* "src/avf.pyx":236
+  /* "src/avf.pyx":240
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")
  *         frame = ref.snap_picture(name_str, blocking, uti_str, quality)             # <<<<<<<<<<<<<<
  * 
  *         if blocking:
  */
-  __pyx_t_5 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_5 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_6 = __pyx_PyFloat_AsFloat(__pyx_v_quality); if (unlikely((__pyx_t_6 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_5 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __pyx_PyFloat_AsFloat(__pyx_v_quality); if (unlikely((__pyx_t_6 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   try {
     __pyx_t_1 = __pyx_v_ref->snap_picture(__pyx_v_name_str, __pyx_t_5, __pyx_v_uti_str, __pyx_t_6);
   } catch(...) {
     __Pyx_CppExn2PyErr();
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 236; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_frame = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "src/avf.pyx":238
+  /* "src/avf.pyx":242
  *         frame = ref.snap_picture(name_str, blocking, uti_str, quality)
  * 
  *         if blocking:             # <<<<<<<<<<<<<<
  *             return frame
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 238; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely(__pyx_t_4 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 242; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__pyx_t_4) {
 
-    /* "src/avf.pyx":239
+    /* "src/avf.pyx":243
  * 
  *         if blocking:
  *             return frame             # <<<<<<<<<<<<<<
@@ -3081,7 +3149,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
     __pyx_r = __pyx_v_frame;
     goto __pyx_L0;
 
-    /* "src/avf.pyx":238
+    /* "src/avf.pyx":242
  *         frame = ref.snap_picture(name_str, blocking, uti_str, quality)
  * 
  *         if blocking:             # <<<<<<<<<<<<<<
@@ -3090,8 +3158,8 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
  */
   }
 
-  /* "src/avf.pyx":223
- *         ref.record(name_str, duration, blocking)
+  /* "src/avf.pyx":227
+ *             ref.record(name_str, _duration, _blocking)
  * 
  *     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):             # <<<<<<<<<<<<<<
  *         """take and save an image and call image_output
@@ -3113,7 +3181,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_8snap_picture(struct __pyx_obj_8pyav
   return __pyx_r;
 }
 
-/* "src/avf.pyx":241
+/* "src/avf.pyx":245
  *             return frame
  * 
  *     def stop_recording(self):             # <<<<<<<<<<<<<<
@@ -3146,7 +3214,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("stop_recording", 0);
 
-  /* "src/avf.pyx":244
+  /* "src/avf.pyx":248
  *         """stop current recording
  *         """
  *         ref = self._ref.get()             # <<<<<<<<<<<<<<
@@ -3155,7 +3223,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
  */
   __pyx_v_ref = __pyx_v_self->_ref.get();
 
-  /* "src/avf.pyx":245
+  /* "src/avf.pyx":249
  *         """
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3165,20 +3233,20 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
   __pyx_t_1 = ((__pyx_v_ref == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "src/avf.pyx":246
+    /* "src/avf.pyx":250
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
  *         ref.stop_recording()
  * 
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "src/avf.pyx":245
+    /* "src/avf.pyx":249
  *         """
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3187,7 +3255,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
  */
   }
 
-  /* "src/avf.pyx":247
+  /* "src/avf.pyx":251
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")
  *         ref.stop_recording()             # <<<<<<<<<<<<<<
@@ -3198,10 +3266,10 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
     __pyx_v_ref->stop_recording();
   } catch(...) {
     __Pyx_CppExn2PyErr();
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "src/avf.pyx":241
+  /* "src/avf.pyx":245
  *             return frame
  * 
  *     def stop_recording(self):             # <<<<<<<<<<<<<<
@@ -3222,7 +3290,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_10stop_recording(struct __pyx_obj_8p
   return __pyx_r;
 }
 
-/* "src/avf.pyx":250
+/* "src/avf.pyx":254
  * 
  *     @property
  *     def shape(self):             # <<<<<<<<<<<<<<
@@ -3257,7 +3325,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("shape", 0);
 
-  /* "src/avf.pyx":253
+  /* "src/avf.pyx":257
  *         """video shape (height, width)
  *         """
  *         ref = self._ref.get()             # <<<<<<<<<<<<<<
@@ -3266,7 +3334,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
  */
   __pyx_v_ref = __pyx_v_self->_ref.get();
 
-  /* "src/avf.pyx":254
+  /* "src/avf.pyx":258
  *         """
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3276,7 +3344,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
   __pyx_t_1 = ((__pyx_v_ref == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "src/avf.pyx":255
+    /* "src/avf.pyx":259
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             return ()             # <<<<<<<<<<<<<<
@@ -3288,7 +3356,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
     __pyx_r = __pyx_empty_tuple;
     goto __pyx_L0;
 
-    /* "src/avf.pyx":254
+    /* "src/avf.pyx":258
  *         """
  *         ref = self._ref.get()
  *         if ref == NULL:             # <<<<<<<<<<<<<<
@@ -3297,7 +3365,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
  */
   }
 
-  /* "src/avf.pyx":256
+  /* "src/avf.pyx":260
  *         if ref == NULL:
  *             return ()
  *         dim = ref.get_dimension()             # <<<<<<<<<<<<<<
@@ -3305,22 +3373,22 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_12shape(struct __pyx_obj_8pyavfcam_A
  */
   __pyx_v_dim = __pyx_v_ref->get_dimension();
 
-  /* "src/avf.pyx":257
+  /* "src/avf.pyx":261
  *             return ()
  *         dim = ref.get_dimension()
  *         return tuple(dim)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __pyx_convert_vector_to_py_unsigned_int(__pyx_v_dim); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __pyx_convert_vector_to_py_unsigned_int(__pyx_v_dim); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = PySequence_Tuple(__pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PySequence_Tuple(__pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "src/avf.pyx":250
+  /* "src/avf.pyx":254
  * 
  *     @property
  *     def shape(self):             # <<<<<<<<<<<<<<
@@ -3831,69 +3899,69 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
 
-  /* "src/avf.pyx":217
- *         """
- * 
+  /* "src/avf.pyx":219
+ *         cdef float _duration = duration
+ *         cdef bint _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         ref = self._ref.get()
  *         if ref == NULL:
  */
-  __pyx_tuple__8 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__8 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 219; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "src/avf.pyx":220
+  /* "src/avf.pyx":222
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
- *         ref.record(name_str, duration, blocking)
  * 
+ *         with nogil:
  */
-  __pyx_tuple__9 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 220; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__9 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "src/avf.pyx":230
+  /* "src/avf.pyx":234
  *         :param quality: if compressed format this is the compression quality
  *         """
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         cdef string uti_str = uti_type.encode('UTF-8')
  * 
  */
-  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "src/avf.pyx":231
+  /* "src/avf.pyx":235
  *         """
  *         cdef string name_str = name.encode('UTF-8')
  *         cdef string uti_str = uti_type.encode('UTF-8')             # <<<<<<<<<<<<<<
  * 
  *         ref = self._ref.get()
  */
-  __pyx_tuple__11 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__11 = PyTuple_Pack(1, __pyx_kp_s_UTF_8); if (unlikely(!__pyx_tuple__11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "src/avf.pyx":235
+  /* "src/avf.pyx":239
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
  *         frame = ref.snap_picture(name_str, blocking, uti_str, quality)
  * 
  */
-  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "src/avf.pyx":246
+  /* "src/avf.pyx":250
  *         ref = self._ref.get()
  *         if ref == NULL:
  *             raise ValueError("Invalid reference!!")             # <<<<<<<<<<<<<<
  *         ref.stop_recording()
  * 
  */
-  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_s_Invalid_reference_2); if (unlikely(!__pyx_tuple__13)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
   __Pyx_RefNannyFinishContext();
@@ -4173,32 +4241,32 @@ PyMODINIT_FUNC PyInit_pyavfcam(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   PyType_Modified(__pyx_ptype_8pyavfcam_Frame);
 
-  /* "src/avf.pyx":250
+  /* "src/avf.pyx":254
  * 
  *     @property
  *     def shape(self):             # <<<<<<<<<<<<<<
  *         """video shape (height, width)
  *         """
  */
-  __pyx_t_1 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_8pyavfcam_AVFCam, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_GetNameInClass((PyObject *)__pyx_ptype_8pyavfcam_AVFCam, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
 
-  /* "src/avf.pyx":249
+  /* "src/avf.pyx":253
  *         ref.stop_recording()
  * 
  *     @property             # <<<<<<<<<<<<<<
  *     def shape(self):
  *         """video shape (height, width)
  */
-  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_property, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_property, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (PyDict_SetItem((PyObject *)__pyx_ptype_8pyavfcam_AVFCam->tp_dict, __pyx_n_s_shape, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem((PyObject *)__pyx_ptype_8pyavfcam_AVFCam->tp_dict, __pyx_n_s_shape, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   PyType_Modified(__pyx_ptype_8pyavfcam_AVFCam);
 

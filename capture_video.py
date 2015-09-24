@@ -43,13 +43,14 @@ if video_name is None:
 
 def record():
     # Open the default video source and record
-    cam = pyavfcam.AVFCam()
     if not duration:
         return
+    cam = pyavfcam.AVFCam()
     cam.record(video_name, duration=duration)
     print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
 
 if threaded:
+    import time
     try:
         # noinspection PyPackageRequirements
         from PySide import QtCore
@@ -71,7 +72,7 @@ if threaded:
             """
             super(Worker, self).__init__()
 
-            self.t = QtCore.QThread(objectName='record_thread')
+            self.t = QtCore.QThread(self, objectName='record_thread')
             self.moveToThread(self.t)
             # noinspection PyUnresolvedReferences
             self.start.connect(self.task, QtCore.Qt.QueuedConnection)
@@ -79,11 +80,12 @@ if threaded:
             self.done.connect(_app.quit)
 
             self.t.start()
-        
+            
         @QtCore.Slot()
         def task(self):
             thread_name = QtCore.QThread.currentThread().objectName()
             print '[%s] recording' % thread_name
+            #time.sleep(10)
             record()
             print '[%s] done' % thread_name
             self.done.emit()
@@ -100,8 +102,8 @@ if threaded:
         app.quit()
     sys.excepthook = excepthook
     timer = QtCore.QTimer()
-    timer.start(200)
     timer.timeout.connect(lambda: None)
+    timer.start(200)
 
     w = Worker(app)
     w.start.emit()

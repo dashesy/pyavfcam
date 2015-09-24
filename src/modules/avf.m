@@ -250,6 +250,11 @@ void CppAVFCam::record(std::string path, float duration, unsigned int blocking)
     // The only accepted file error is if file does not exist yet
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
         file_error = nil;
+//         dispatch_sync(dispatch_get_main_queue(), ^{
+//             [m_pCapture startRecordingToOutputFileURL:url
+//                                          withDuration:duration
+//                                          withBlocking:blocking];
+//         });
         [m_pCapture startRecordingToOutputFileURL:url
                                      withDuration:duration
                                      withBlocking:blocking];

@@ -214,11 +214,15 @@ cdef class AVFCam(object):
         :param blocking: how many extra seconds (if any) should block until recording is done (or error happens)
         """
 
+        cdef float _duration = duration
+        cdef bint _blocking = blocking
         cdef string name_str = name.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-        ref.record(name_str, duration, blocking)
+            
+        with nogil:
+            ref.record(name_str, _duration, _blocking)
 
     def snap_picture(self, name='', blocking=10, uti_type='', quality=1.0):
         """take and save an image and call image_output
