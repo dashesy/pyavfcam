@@ -118,7 +118,7 @@ static dispatch_queue_t _backgroundQueue = nil;
     [pool drain];
 }
 
-- (void)stop_recording
+- (void)stopRecording
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
@@ -169,7 +169,7 @@ static dispatch_queue_t _backgroundQueue = nil;
 }
 
 - (void)captureFrameWithBlocking:(unsigned int)blocking
-  NSError *error
+  error:(NSError * _Nullable *)error
   completionHandler:(void (^)(CameraFrame & frame))handle
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -193,7 +193,7 @@ static dispatch_queue_t _backgroundQueue = nil;
 
     if (!error) {
         __block dispatch_semaphore_t sem = NULL;
-        __block NSError _err = nil;
+        __block NSError *_err = nil;
         if (blocking)
             sem = dispatch_semaphore_create(0);
 
@@ -216,7 +216,8 @@ static dispatch_queue_t _backgroundQueue = nil;
                     [pool drain];
                 }
         }];
-        error = _err;
+        if (error)
+            *error = _err;
         if (sem) {
             // This is blocking call so wait at most handful of seconds for the signal
             float wait = blocking;

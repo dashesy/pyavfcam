@@ -26,10 +26,10 @@ class CameraFrame;
 }
 
 - (void)captureFrameWithBlocking:(unsigned int)blocking
-  error:(NSError *)error
+  error:(NSError * _Nullable *)error
   completionHandler:(void (^)(CameraFrame & frame))handle;
 
-- (void)stop_recording;
+- (void)stopRecording;
 - (void)startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
   withBlocking:(unsigned int)blocking;
