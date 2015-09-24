@@ -26,7 +26,7 @@ class CameraFrame;
 }
 
 - (void)captureFrameWithBlocking:(unsigned int)blocking
-  error:(NSError * _Nullable *)error
+  error:(NSError * *)error
   completionHandler:(void (^)(CameraFrame & frame))handle;
 
 - (void)stopRecording;
