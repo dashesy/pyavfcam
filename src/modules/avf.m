@@ -173,7 +173,7 @@ void CppAVFCam::image_output(CameraFrame &frame)
 
     m_pLastImage = NULL;
     if (m_bBlockingImage)
-        m_pLastImage = cy_get_frame(frame)
+        m_pLastImage = cy_get_frame(frame);
     if (!m_haveImageCallback)
         return
 
@@ -305,7 +305,7 @@ PyObject * CppAVFCam::snap_picture(std::string path, unsigned int blocking,
     if (!file_error || file_error.code == NSFileNoSuchFileError) {
         file_error = nil;
         [m_pCapture captureFrameWithBlocking:blocking
-                                       error:&file_error
+                                       error:&error
                            completionHandler:^(CameraFrame & frame) {
 
             if (!no_file)
