@@ -64,6 +64,7 @@ if threaded:
     class Worker(QtCore.QObject):
 
         done = QtCore.Signal()
+        start = QtCore.Signal()
 
         def __init__(self, _app):
             """run an app job in a thread
@@ -73,12 +74,13 @@ if threaded:
             self.t = QtCore.QThread(objectName='record_thread')
             self.moveToThread(self.t)
             # noinspection PyUnresolvedReferences
-            self.t.started.connect(self.task)
+            self.start.connect(self.task, QtCore.Qt.QueuedConnection)
             self.done.connect(self.t.quit)
             self.done.connect(_app.quit)
 
             self.t.start()
-
+        
+        @QtCore.Slot()
         def task(self):
             thread_name = QtCore.QThread.currentThread().objectName()
             print '[%s] recording' % thread_name
@@ -102,6 +104,7 @@ if threaded:
     timer.timeout.connect(lambda: None)
 
     w = Worker(app)
+    w.start.emit()
     sys.exit(app.exec_())
 
 

@@ -195,6 +195,28 @@ static dispatch_queue_t _backgroundQueue = nil;
     [pool release];
 }
 
+- (void)waitForFileOutputFor:(float)wait
+{
+//         dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
+//                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
+//         int err = dispatch_semaphore_wait(m_semFile, timout);
+//         std::cout << "err " << err << std::endl;
+    if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
+        std::cout << " waiting on main " << wait << std::endl;
+    else
+        std::cout << " wait " << wait << std::endl;
+    int err;
+    while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
+        [NSThread sleepForTimeInterval:0.05];
+        wait -= 0.05;
+        if (wait <= 0)
+           break;
+    }
+    std::cout << "err " << err << " wait " << wait << std::endl;
+
+}
+
 // start recording in the correct thread
 - (void)startRecordingToOutputFileURL:(NSURL *)url
   withDuration:(float)duration
@@ -214,32 +236,33 @@ static dispatch_queue_t _backgroundQueue = nil;
     if (blocking)
         m_semFile = dispatch_semaphore_create(0);
 
-    [self performSelector:@selector(startRecordingWithDict:)
-                 onThread:m_thread
-               withObject:params
-            waitUntilDone:YES];
+    std::cout << " recording 1 cur " << CFRunLoopGetCurrent() << std::endl;
+//     [self performSelector:@selector(startRecordingWithDict:)
+//                  onThread:m_thread
+//                withObject:params
+//             waitUntilDone:YES];
 
     // Block on file output, time out in more than the expected time!
     if (m_semFile) {
-        dispatch_time_t timout = dispatch_time(DISPATCH_TIME_NOW,
-                                               (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
-        int err = dispatch_semaphore_wait(m_semFile, timout);
-        std::cout << "err " << err << std::endl;
-
-//        float wait = blocking + duration;
-//        std::cout << " wait " << wait << std::endl;
-//        int err;
-//        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-//            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, YES);
-//            wait -= 0.05;
-//            if (wait <= 0)
-//               break;
-//        }
-//        std::cout << "err " << err << " wait " << wait << std::endl;
-
+            [self _startRecordingToOutputFileURL:url 
+                                    withDuration:duration
+                                    withBlocking:blocking];
+            [self waitForFileOutputFor:(duration + blocking)];
+//         if (CFRunLoopGetCurrent() == CFRunLoopGetMain()) {
+//             [self _startRecordingToOutputFileURL:url 
+//                                     withDuration:duration
+//                                     withBlocking:blocking];
+//             [self waitForFileOutputFor:(duration + blocking)];
+//         } else {
+//             dispatch_sync(dispatch_get_main_queue(), ^{
+//                 [self _startRecordingToOutputFileURL:url 
+//                                         withDuration:duration
+//                                         withBlocking:blocking];
+//                 [self waitForFileOutputFor:(duration + blocking)];
+//             });
+//         }
         dispatch_release(m_semFile);
         m_semFile = NULL;
-
     }
 
     [pool release];
