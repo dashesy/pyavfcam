@@ -151,6 +151,7 @@ static dispatch_queue_t _backgroundQueue = nil;
 //                                                (uint64_t) (blocking + (unsigned int)duration) * NSEC_PER_SEC );
 //         int err = dispatch_semaphore_wait(m_semFile, timout);
 //         std::cout << "err " << err << std::endl;
+        float wait = duration + blocking;
         if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
             std::cout << " waiting on main " << wait << std::endl;
         else
@@ -206,7 +207,7 @@ static dispatch_queue_t _backgroundQueue = nil;
                 } else {
                     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                     CameraFrame frame(imageSampleBuffer);
-                    if handle
+                    if (handle)
                         handle(frame)
                     // Callback at the end
                     m_instance->image_output(frame);
