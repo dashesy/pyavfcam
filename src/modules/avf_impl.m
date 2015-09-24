@@ -208,7 +208,7 @@ static dispatch_queue_t _backgroundQueue = nil;
                     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
                     CameraFrame frame(imageSampleBuffer);
                     if (handle)
-                        handle(frame)
+                        handle(frame);
                     // Callback at the end
                     m_instance->image_output(frame);
                     if (sem)
