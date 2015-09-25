@@ -215,7 +215,7 @@ cdef class AVFCam(object):
         """
 
         cdef float _duration = duration
-        cdef bint _blocking = blocking
+        cdef unsigned int _blocking = blocking
         cdef string name_str = name.encode('UTF-8')
         ref = self._ref.get()
         if ref == NULL:

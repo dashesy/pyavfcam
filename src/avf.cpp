@@ -2748,16 +2748,17 @@ static PyObject *__pyx_pw_8pyavfcam_6AVFCam_7record(PyObject *__pyx_v_self, PyOb
 
 static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_AVFCam *__pyx_v_self, PyObject *__pyx_v_name, PyObject *__pyx_v_duration, PyObject *__pyx_v_blocking) {
   float __pyx_v__duration;
-  int __pyx_v__blocking;
+  unsigned int __pyx_v__blocking;
   std::string __pyx_v_name_str;
   CppAVFCam *__pyx_v_ref;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   float __pyx_t_1;
-  int __pyx_t_2;
+  unsigned int __pyx_t_2;
   PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   std::string __pyx_t_5;
+  int __pyx_t_6;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2767,7 +2768,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
  *         """
  * 
  *         cdef float _duration = duration             # <<<<<<<<<<<<<<
- *         cdef bint _blocking = blocking
+ *         cdef unsigned int _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')
  */
   __pyx_t_1 = __pyx_PyFloat_AsFloat(__pyx_v_duration); if (unlikely((__pyx_t_1 == (float)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2776,16 +2777,16 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   /* "src/avf.pyx":218
  * 
  *         cdef float _duration = duration
- *         cdef bint _blocking = blocking             # <<<<<<<<<<<<<<
+ *         cdef unsigned int _blocking = blocking             # <<<<<<<<<<<<<<
  *         cdef string name_str = name.encode('UTF-8')
  *         ref = self._ref.get()
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_blocking); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_As_unsigned_int(__pyx_v_blocking); if (unlikely((__pyx_t_2 == (unsigned int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_v__blocking = __pyx_t_2;
 
   /* "src/avf.pyx":219
  *         cdef float _duration = duration
- *         cdef bint _blocking = blocking
+ *         cdef unsigned int _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         ref = self._ref.get()
  *         if ref == NULL:
@@ -2800,7 +2801,7 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
   __pyx_v_name_str = __pyx_t_5;
 
   /* "src/avf.pyx":220
- *         cdef bint _blocking = blocking
+ *         cdef unsigned int _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')
  *         ref = self._ref.get()             # <<<<<<<<<<<<<<
  *         if ref == NULL:
@@ -2815,8 +2816,8 @@ static PyObject *__pyx_pf_8pyavfcam_6AVFCam_6record(struct __pyx_obj_8pyavfcam_A
  *             raise ValueError("Invalid reference!!")
  * 
  */
-  __pyx_t_2 = ((__pyx_v_ref == NULL) != 0);
-  if (__pyx_t_2) {
+  __pyx_t_6 = ((__pyx_v_ref == NULL) != 0);
+  if (__pyx_t_6) {
 
     /* "src/avf.pyx":222
  *         ref = self._ref.get()
@@ -3901,7 +3902,7 @@ static int __Pyx_InitCachedConstants(void) {
 
   /* "src/avf.pyx":219
  *         cdef float _duration = duration
- *         cdef bint _blocking = blocking
+ *         cdef unsigned int _blocking = blocking
  *         cdef string name_str = name.encode('UTF-8')             # <<<<<<<<<<<<<<
  *         ref = self._ref.get()
  *         if ref == NULL:
