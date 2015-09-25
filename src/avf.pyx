@@ -171,6 +171,7 @@ cdef class AVFCam(object):
         """
         :param sinks: list of video sinks
             'file': File output (default)
+            'image': Image output
             'callback': Decompressed video frame callback
         """
         cdef bint sink_file = False
@@ -220,7 +221,9 @@ cdef class AVFCam(object):
         ref = self._ref.get()
         if ref == NULL:
             raise ValueError("Invalid reference!!")
-            
+
+        # should release gil, or the main runloop will block before the call
+        #  and AVFoundation does not like that because callbacks may com through main queue
         with nogil:
             ref.record(name_str, _duration, _blocking)
 
@@ -230,6 +233,7 @@ cdef class AVFCam(object):
         :param blocking: how many seconds (if any) should block until image is taken (or error happens)
         :param uti_type: OSX uti/mime type string (will try to find the right one if not given)
         :param quality: if compressed format this is the compression quality
+        :returns frame: if it is blocking a Frame is returned, otherwise None
         """
         cdef string name_str = name.encode('UTF-8')
         cdef string uti_str = uti_type.encode('UTF-8')
