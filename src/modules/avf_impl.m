@@ -61,7 +61,7 @@ static dispatch_queue_t _backgroundQueue = nil;
 // Keep the runloop alive
 -(void)keepAlive:(NSTimer *)timer
 {
-   std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
+//    std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 // Constructor delegate
