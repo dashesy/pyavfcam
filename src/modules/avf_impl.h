@@ -15,6 +15,7 @@ class CameraFrame;
 {
     CppAVFCam * m_instance; // What I am delegated for
     dispatch_semaphore_t m_semFile; // used to signal when file recording is done
+    NSTimer * m_timer; // Keep-alive timer
 
 // Make thes public just for quick checks in avf.m
 @public

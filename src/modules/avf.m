@@ -57,7 +57,6 @@ CppAVFCam::CppAVFCam(bool sink_file, bool sink_callback, bool sink_image, PyObje
             Py_XINCREF(m_pObj);
         }
     }
-    std::cout << "const cur " << CFRunLoopGetCurrent()<< " const main " << CFRunLoopGetMain() << std::endl;
 
     // Connect this class with NSObject
     m_pCapture = [[AVCaptureDelegate alloc] initWithInstance: this];
@@ -81,8 +80,8 @@ CppAVFCam::~CppAVFCam()
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     if (m_pCapture) {
-        std::cout << "dest cur " << CFRunLoopGetCurrent()<< " dest main " << CFRunLoopGetMain() << std::endl;
-        std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
+//         std::cout << "dest cur " << CFRunLoopGetCurrent()<< " dest main " << CFRunLoopGetMain() << std::endl;
+//         std::cout << "   m_pCapture " << CFGetRetainCount((__bridge CFTypeRef)m_pCapture) << std::endl;
         [m_pCapture release];
         m_pCapture = NULL;
     }

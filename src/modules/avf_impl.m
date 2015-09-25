@@ -61,13 +61,20 @@ static dispatch_queue_t _backgroundQueue = nil;
 // Keep the runloop alive
 -(void)keepAlive:(NSTimer *)timer
 {
-//    std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
+   std::cout << "keep alive cur " << CFRunLoopGetCurrent() << std::endl;
 }
 
 // Constructor delegate
 -(void)createSession
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    ACWeakProxy * proxy = [[ACWeakProxy alloc] initWithObject:self];
+    m_timer = [NSTimer scheduledTimerWithTimeInterval:1 
+                                               target:proxy
+                                             selector:@selector(keepAlive:)
+                                             userInfo:nil repeats:YES];
+    [proxy release];
 
     m_pDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     if (m_pDevice) {
@@ -155,20 +162,14 @@ static dispatch_queue_t _backgroundQueue = nil;
 
     if (m_semFile) {
         float wait = duration + blocking;
-        if (CFRunLoopGetCurrent() == CFRunLoopGetMain()) {
-            std::cout << " waiting on main " << wait << std::endl;
-            int err;
-            while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
-                CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
-                wait -= 0.05;
-                if (wait <= 0)
-                   break;
-            }
-            std::cout << "err " << err << " wait " << wait << std::endl;
-        } else {
-            std::cout << " wait " << wait << std::endl;
-            [NSThread sleepForTimeInterval:wait];
+        int err;
+        while ((err = dispatch_semaphore_wait(m_semFile, DISPATCH_TIME_NOW))) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.05, NO);
+            wait -= 0.05;
+            if (wait <= 0)
+               break;
         }
+//         std::cout << "err " << err << " wait " << wait << std::endl;
     }
     [pool release];
 }
@@ -318,6 +319,10 @@ static dispatch_queue_t _backgroundQueue = nil;
 -(void)deallocateSession
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    
+    // no more timer source
+    [m_timer invalidate];
+    
     // BUG: AVFoundation causes segfaults if release some of these,
     //      this is only evident if object lives in a non-main thread.
     //      potential for memory leak is annoying but I cannot find a safe way to deallocate.
