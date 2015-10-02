@@ -169,7 +169,11 @@ static dispatch_queue_t _backgroundQueue = nil;
             if (wait <= 0)
                break;
         }
-//         std::cout << "err " << err << " wait " << wait << std::endl;
+        // Make sure recording stops
+        if (m_pVideoFileOutput.recording)
+            [m_pVideoFileOutput stopRecording];
+        if (err != 0)
+            std::cerr << "output not called in time " << wait << std::endl;
     }
     [pool release];
 }
@@ -331,20 +335,33 @@ static dispatch_queue_t _backgroundQueue = nil;
     AVCaptureStillImageOutput * pStillImageOutput = m_pStillImageOutput;
     // Close the session in a background session
     dispatch_async(_backgroundQueue, ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         if (pSession) {
+            // std::cout << "   pSession " << CFGetRetainCount((__bridge CFTypeRef)pSession) << std::endl;
             if (pSession.isRunning)
                 [pSession stopRunning];
             [pSession release];
         }
+        // BUG: I cannot release these safely because AVFoundation segfaults!
+        
         // Release the rest
-        if (pDevice)
-            [pDevice release];
-        if (pVideoInput)
-            [pVideoInput release];
-        if (pVideoFileOutput)
-            [pVideoFileOutput release];
-        if (pStillImageOutput)
-            [pStillImageOutput release];
+        if (pDevice) {
+//             std::cout << "   pDevice " << CFGetRetainCount((__bridge CFTypeRef)pDevice) << std::endl;
+//             [pDevice release];
+        }
+        if (pVideoInput) {
+//             std::cout << "   pVideoInput " << CFGetRetainCount((__bridge CFTypeRef)pVideoInput) << std::endl;
+//             [pVideoInput release];
+        }
+        if (pVideoFileOutput) {
+//             std::cout << "   pVideoFileOutput " << CFGetRetainCount((__bridge CFTypeRef)pVideoFileOutput) << std::endl;
+//             [pVideoFileOutput release];
+        }
+        if (pStillImageOutput) {
+//             std::cout << "   pStillImageOutput " << CFGetRetainCount((__bridge CFTypeRef)pStillImageOutput) << std::endl;
+//             [pStillImageOutput release];
+        }
+        [pool release];
     });
     m_pSession = NULL;
     m_pVideoInput = NULL;

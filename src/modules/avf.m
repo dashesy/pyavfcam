@@ -124,7 +124,7 @@ void CppAVFCam::file_output_done(bool error)
 {
     // BUG: If duration is given to AVFoundation it seems as opposed to Apple docs, this is not called !!
 
-    std::cout << "file output" << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
+    //std::cout << "file output" << " cur " << CFRunLoopGetCurrent()<< " main " << CFRunLoopGetMain() << std::endl;
 
     if (!m_pObj || !m_haveMovieCallback)
         return;
