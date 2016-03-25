@@ -56,7 +56,7 @@ else:
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
                          ],
-        extra_compile_args=['-ObjC++', '-std=c++11'],
+        extra_compile_args=['-ObjC++', '-std=c++11', '-stdlib=libc++'],
         language="c++",
     )
 
