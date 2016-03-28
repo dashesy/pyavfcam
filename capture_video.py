@@ -17,7 +17,7 @@ import pyavfcam
 
 threaded = False
 duration = 10
-video_name = None
+video_name = 'my_video.avi'
 
 parg = None
 for arg_idx, arg in enumerate(sys.argv):
