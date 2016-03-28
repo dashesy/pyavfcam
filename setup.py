@@ -41,7 +41,7 @@ if build_ext:
         extra_link_args=['-framework', 'AVFoundation',
                          '-framework', 'Foundation',
                          ],
-        extra_compile_args=['-ObjC++', '-std=c++11'],
+        extra_compile_args=['-ObjC++', '-std=c++11', '-stdlib=libc++','-mmacosx-version-min=10.7'],
         language="c++",
     )
 else:
