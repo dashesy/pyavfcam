@@ -47,7 +47,7 @@ def record():
         return
     cam = pyavfcam.AVFCam()
     cam.record(video_name, duration=duration)
-    print "Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
+    print("Saved " + video_name + " (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")")
 
 if threaded:
     import time
@@ -80,14 +80,14 @@ if threaded:
             self.done.connect(_app.quit)
 
             self.t.start()
-            
+
         @QtCore.Slot()
         def task(self):
             thread_name = QtCore.QThread.currentThread().objectName()
-            print '[%s] recording' % thread_name
+            print('[%s] recording' % thread_name)
             #time.sleep(10)
             record()
-            print '[%s] done' % thread_name
+            print('[%s] done' % thread_name)
             self.done.emit()
 
     import traceback
@@ -97,7 +97,7 @@ if threaded:
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def excepthook(exc_type, exc_val, tracebackobj):
-        print ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj))
+        print(''.join(traceback.format_exception(exc_type, exc_val, tracebackobj)))
         # quit on exception
         app.quit()
     sys.excepthook = excepthook
