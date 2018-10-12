@@ -85,7 +85,7 @@ cdef class Frame(object):
         dim = ref.get_dimension()
         self.shape[0] = dim[0]
         self.shape[1] = dim[1]
-        
+
         itemsize = 4  # bytes for each element
 
         # Stride 1 is the distance, in bytes, between two items in a row;
@@ -159,7 +159,7 @@ cdef class AVFCam(object):
         'def video_output(self, frame:Frame)'
         'def image_output(self, frame:Frame)'
     """
-    
+
     # I can have weak reference
     cdef object __weakref__
 
@@ -207,7 +207,7 @@ cdef class AVFCam(object):
         """called when last reference is claimed
         """
         self._ref.reset()
-        
+
     def record(self, name, duration=20, blocking=4):
         """record a video and call file_output_done
         :param name: file path to create (will overwrite if it exists)

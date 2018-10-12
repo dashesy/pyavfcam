@@ -11,4 +11,4 @@ import pyavfcam
 cam = pyavfcam.AVFCam(sinks='image')
 cam.snap_picture('test.jpg')
 
-print "Saved test.jpg (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")"
+print( "Saved test.jpg (Size: " + str(cam.shape[0]) + " x " + str(cam.shape[1]) + ")")
