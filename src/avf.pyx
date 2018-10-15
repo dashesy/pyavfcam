@@ -1,3 +1,4 @@
+#cython: language_level=3, boundscheck=False, c_string_type=unicode, c_string_encoding=utf-8
 """
 Created on Sept 7, 2015
 @author: dashesy

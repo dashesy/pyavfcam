@@ -27,7 +27,7 @@ script_dir = os.getcwd()
 def readme(fname):
     """Read text out of a file in the same directory as setup.py.
     """
-    return open(join(dirname(__file__), fname)).read()
+    return open(join(dirname(__file__), fname), 'rt').read()
 
 if build_ext:
     avf_module = Extension(
